@@ -103,7 +103,9 @@ handlers.push(function(client, message, content) {
 
 handlers.push(function(client, message, content) {
         if(/^!unflip/i.test(content[0])) {
-                sendMessage(client, message.channe, '┬─┬ ノ( ^_^ノ)');
+                sendMessage(client, message.channe, _.map([9516, 9472, 9516, 32, 12494, 40, 32, 94, 95, 94, 12494, 41], function(c) {
+					return String.fromCharCode(c);
+				}).join(''));
                 return true;
         }
 });
