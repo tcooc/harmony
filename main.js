@@ -103,13 +103,13 @@ handlers.push(function(client, message, content) {
 
 function bindTwitter(client) {
 	var acceptRegex = /Mod|Blueprint|Aura|Key/;
-	var channels = _.map(['101715629001687040', '115164118599598080'], function(id) {
+	var channels = _.map(secrets.discord_channels, function(id) {
 		return client.getChannel('id', id);
 	});
-	twitter.createStream('1344755923').then(function(stream) {
+	twitter.createStream(secrets.twitter_follow').then(function(stream) {
 	        stream.on('data', function(tweet) {
 			console.log(tweet);
-			if(tweet.user.id_str === '1344755923' &&
+			if(tweet.user.id_str === secrets.twitter_follow &&
 				!tweet.retweeted_status &&
 				acceptRegex.test(tweet.text)) {
 				_.each(channels, function(channel) {
