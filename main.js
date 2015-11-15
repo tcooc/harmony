@@ -101,13 +101,6 @@ handlers.push(function(client, message, content) {
 	}
 });
 
-handlers.push(function(client, message, content) {
-        if(/^!unflip/i.test(content[0])) {
-                sendMessage(client, message.channe, '┬─┬ ノ( ^_^ノ)');
-                return true;
-        }
-});
-
 function bindTwitter(client) {
 	var acceptRegex = /Mod|Blueprint|Aura|Key/;
 	var channels = _.map(secrets.discord_channels, function(id) {
