@@ -52,7 +52,7 @@ handlers.push(function(client, message, content) {
 });
 
 handlers.push(function(client, message, content) {
-	if(content[0].startsWith('!deal')) {
+	if(/!deals?/i.test(content[0])) {
 		simpleGET('http://wf.tcooc.net/deal', function(body) {
 				sendMessage(client, message.channel, body);
 		});
@@ -61,7 +61,7 @@ handlers.push(function(client, message, content) {
 });
 
 handlers.push(function(client, message, content) {
-	if(content[0].startsWith('!scan')) {
+	if(/!scans?/i.test(content[0])) {
 		simpleGET('http://wf.tcooc.net/scan', function(body) {
 				sendMessage(client, message.channel, body);
 		});
@@ -87,7 +87,7 @@ handlers.push(function(client, message, content) {
 });
 
 handlers.push(function(client, message, content) {
-	if(content[0].toLowerCase() === 'soon') {
+	if(/soon/i.test(content[0])) {
 		sendMessage(client, message.channel, 'Soon' + String.fromCharCode(8482));
 		return true;
 	}
