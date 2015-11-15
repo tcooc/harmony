@@ -54,7 +54,7 @@ handlers.push(function(message, content) {
 handlers.push(function(message, content) {
 	if(/^!deals?/i.test(content[0])) {
 		simpleGET('http://wf.tcooc.net/deal', function(body) {
-				client.sendMessage(message.channel, body);
+			client.sendMessage(message.channel, body);
 		});
 		return true;
 	}
@@ -63,7 +63,7 @@ handlers.push(function(message, content) {
 handlers.push(function(message, content) {
 	if(/^!scans?/i.test(content[0])) {
 		simpleGET('http://wf.tcooc.net/scan', function(body) {
-				client.sendMessage(message.channel, body);
+			client.sendMessage(message.channel, body);
 		});
 		return true;
 	}
@@ -107,7 +107,7 @@ function bindTwitter() {
 		return client.getChannel('id', id);
 	});
 	twitter.createStream(secrets.twitter_follow).then(function(stream) {
-	        stream.on('data', function(tweet) {
+		stream.on('data', function(tweet) {
 			console.log(tweet);
 			if(tweet.user.id_str === secrets.twitter_follow &&
 				!tweet.retweeted_status &&
@@ -116,10 +116,10 @@ function bindTwitter() {
 					client.sendMessage(channel, tweet.text);
 				});
 			}
-	        });
-	        stream.on('error', function(error) {
-	                throw error;
-	        });
+		});
+		stream.on('error', function(error) {
+			throw error;
+		});
 	});
 }
 
