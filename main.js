@@ -20,15 +20,15 @@ function simpleGET(url, callback) {
 }
 
 var handlers = [];
-function messageHandler(client, message) {
+function messageHandler(message) {
 	console.log(message.author.username, message.channel.name + '(' + message.channel.id + ')', message.content);
 	var content = message.content.split(' ');
 	_.find(handlers, function(handler) {
-		return handler(client, message, content);
+		return handler(message, content);
 	});
 }
 
-handlers.push(function(client, message, content) {
+handlers.push(function(message, content) {
 	if(content[0] === '!invite' &&
 		content[1].indexOf('discord.gg') > -1 &&
 		message.channel instanceof Discord.PMChannel) {
@@ -42,7 +42,7 @@ handlers.push(function(client, message, content) {
 	}
 });
 
-handlers.push(function(client, message, content) {
+handlers.push(function(message, content) {
 	if(content[0] === '!trader') {
 		simpleGET('http://wf.tcooc.net/trader', function(body) {
 			client.sendMessage(message.channel, body);
@@ -51,7 +51,7 @@ handlers.push(function(client, message, content) {
 	}
 });
 
-handlers.push(function(client, message, content) {
+handlers.push(function(message, content) {
 	if(/^!deals?/i.test(content[0])) {
 		simpleGET('http://wf.tcooc.net/deal', function(body) {
 				client.sendMessage(message.channel, body);
@@ -60,7 +60,7 @@ handlers.push(function(client, message, content) {
 	}
 });
 
-handlers.push(function(client, message, content) {
+handlers.push(function(message, content) {
 	if(/^!scans?/i.test(content[0])) {
 		simpleGET('http://wf.tcooc.net/scan', function(body) {
 				client.sendMessage(message.channel, body);
@@ -69,7 +69,7 @@ handlers.push(function(client, message, content) {
 	}
 });
 
-handlers.push(function(client, message, content) {
+handlers.push(function(message, content) {
 	if(content[0] === '!wiki' && content.length > 1) {
 		// check if page exists, kinda
 		var url = 'https://warframe.wikia.com/wiki/';
@@ -86,14 +86,14 @@ handlers.push(function(client, message, content) {
 	}
 });
 
-handlers.push(function(client, message, content) {
+handlers.push(function(message, content) {
 	if(/^soon/i.test(content[0])) {
 		client.sendMessage(message.channel, 'Soon' + String.fromCharCode(8482));
 		return true;
 	}
 });
 
-handlers.push(function(client, message, content) {
+handlers.push(function(message, content) {
 	if(/^!trialstats?/i.test(content[0])) {
 		client.sendMessage(message.channel,
 			'Hek: http://tinyurl.com/qb752oj Nightmare: http://tinyurl.com/p8og6xf Jordas: http://tinyurl.com/prpebzh');
@@ -101,7 +101,7 @@ handlers.push(function(client, message, content) {
 	}
 });
 
-function bindTwitter(client) {
+function bindTwitter() {
 	var acceptRegex = /Mod|Blueprint|Aura|Key/;
 	var channels = _.map(secrets.discord_channels, function(id) {
 		return client.getChannel('id', id);
@@ -125,7 +125,7 @@ function bindTwitter(client) {
 
 var client = start(messageHandler);
 
-client.on('ready', bindTwitter.bind(null, client));
+client.on('ready', bindTwitter);
 client.on('ready', function() {
 	console.log('Harmony activated');
 });
