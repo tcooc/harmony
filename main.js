@@ -1,8 +1,8 @@
 var _ = require('underscore');
 var Discord = require('discord.js');
 var request = require('request');
-var start = require('./client').start;
-var twitter = require('./twitter');
+var start = require('./lib/client').start;
+var twitter = require('./lib/twitter');
 var secrets = require('./secrets');
 
 // Simple GET request that also limite the number of characters to 400
