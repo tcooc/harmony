@@ -94,7 +94,7 @@ handlers.push(function(client, message, content) {
 });
 
 handlers.push(function(client, message, content) {
-	if(content[0].startsWith('!trialstat')) {
+	if(/!trialstats?/i.test(content[0])) {
 		sendMessage(client, message.channel,
 			'Hek: http://tinyurl.com/qb752oj Nightmare: http://tinyurl.com/p8og6xf Jordas: http://tinyurl.com/prpebzh');
 		return true;
