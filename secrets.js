@@ -3,6 +3,7 @@ module.exports = {
 	password: '',
 	twitter_follow: '',
 	discord_channels: []
+	discord_channels: [],
 	twitter: {
 		consumer_key: '',
 		consumer_secret: '',
