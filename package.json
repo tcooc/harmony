@@ -1,0 +1,13 @@
+{
+  "private": true,
+  "dependencies": {
+    "discord.js": "^4.1.1",
+    "request": "^2.65.0",
+    "twitter": "^1.2.5"
+  },
+  "devDependencies": {
+    "grunt": "^0.4.5",
+    "grunt-contrib-jshint": "^0.11.3",
+    "grunt-contrib-watch": "^0.6.1"
+  }
+}
