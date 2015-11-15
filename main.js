@@ -52,7 +52,7 @@ handlers.push(function(client, message, content) {
 });
 
 handlers.push(function(client, message, content) {
-	if(/!deals?/i.test(content[0])) {
+	if(/^!deals?/i.test(content[0])) {
 		simpleGET('http://wf.tcooc.net/deal', function(body) {
 				sendMessage(client, message.channel, body);
 		});
@@ -61,7 +61,7 @@ handlers.push(function(client, message, content) {
 });
 
 handlers.push(function(client, message, content) {
-	if(/!scans?/i.test(content[0])) {
+	if(/^!scans?/i.test(content[0])) {
 		simpleGET('http://wf.tcooc.net/scan', function(body) {
 				sendMessage(client, message.channel, body);
 		});
@@ -87,14 +87,14 @@ handlers.push(function(client, message, content) {
 });
 
 handlers.push(function(client, message, content) {
-	if(/soon/i.test(content[0])) {
+	if(/^soon/i.test(content[0])) {
 		sendMessage(client, message.channel, 'Soon' + String.fromCharCode(8482));
 		return true;
 	}
 });
 
 handlers.push(function(client, message, content) {
-	if(/!trialstats?/i.test(content[0])) {
+	if(/^!trialstats?/i.test(content[0])) {
 		sendMessage(client, message.channel,
 			'Hek: http://tinyurl.com/qb752oj Nightmare: http://tinyurl.com/p8og6xf Jordas: http://tinyurl.com/prpebzh');
 		return true;
