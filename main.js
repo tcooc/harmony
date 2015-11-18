@@ -108,7 +108,7 @@ function bindTwitter() {
 	});
 	twitter.createStream(secrets.twitter_follow).then(function(stream) {
 		stream.on('data', function(tweet) {
-			console.log(tweet);
+			console.log('Tweet:' + tweet.text);
 			if(tweet.user.id_str === secrets.twitter_follow &&
 				!tweet.retweeted_status &&
 				acceptRegex.test(tweet.text)) {
