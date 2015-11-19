@@ -1,12 +1,6 @@
-module.exports = {
-	email: '',
-	password: '',
-	twitter_follow: '',
-	discord_channels: [],
-	twitter: {
-		consumer_key: '',
-		consumer_secret: '',
-		access_token_key: '',
-		access_token_secret: ''
-	}
-};
+var fs = require('fs');
+
+var secretsFile = process.argv[2];
+var secrets = JSON.parse(fs.readFileSync(secretsFile).toString());
+
+module.exports = secrets;
