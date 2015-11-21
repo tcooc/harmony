@@ -2,7 +2,6 @@ var Promise = require('bluebird');
 var exec = Promise.promisify(require('child_process').exec, {multiArgs: true});
 var fs = Promise.promisifyAll(require('fs'));
 var URL = require('url');
-var uuid = require('uuid');
 
 module.exports = function(owner) {
 	return function(messaging) {
@@ -35,7 +34,7 @@ module.exports = function(owner) {
 			return true;
 		});
 
-		messaging.addCommandHandler(/^!joinvoice/i, function(message, content) {
+		messaging.addCommandHandler(/^!voice:join/i, function(message, content) {
 			if(message.author.id !== owner) {
 				return;
 			}
@@ -45,7 +44,7 @@ module.exports = function(owner) {
 			return true;
 		});
 
-		messaging.addCommandHandler(/^!play/i, function(message, content) {
+		messaging.addCommandHandler(/^!voice:play/i, function(message, content) {
 			if(message.author.id !== owner || content.length <= 1) {
 				return;
 			}
@@ -57,11 +56,11 @@ module.exports = function(owner) {
 				messaging.client.sendMessage(message.channel, 'Your link is broked');
 			} else {
 				var youtubeUrl = 'https://www.youtube.com/watch?v=' + videoId;
-				var output = '/www/.temp/' + uuid.v4();
+				var output = '/www/.temp/' + videoId;
 
 				messaging.client.sendMessage(message.channel, 'Playing video');
 
-				exec('youtube-dl \'' + youtubeUrl +'\' --max-filesize 50m -f worst -o ' + output)
+				exec('youtube-dl \'' + youtubeUrl +'\' --max-filesize 50m -f worst -w -o ' + output)
 				.then(function(stdout, stderr) {
 					return messaging.client.voiceConnection.playFile(output);
 				})
@@ -71,7 +70,7 @@ module.exports = function(owner) {
 			}
 		});
 
-		messaging.addCommandHandler(/^!leavevoice/i, function(message, content) {
+		messaging.addCommandHandler(/^!voice:leave/i, function(message, content) {
 			if(message.author.id !== owner) {
 				return;
 			}
