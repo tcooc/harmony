@@ -65,8 +65,16 @@ module.exports = function(owner) {
 				.then(function(stdout, stderr) {
 					return messaging.client.voiceConnection.playFile(output);
 				})
-				.then(function(event) {
-					console.log(event, arguments);
+				.then(function(intent) {
+					intent.on('time', function(t) {
+						console.log('time ' + t);
+					});
+					intent.on('end', function() {
+						messaging.client.sendMessage(message.channel, 'Finished playing');
+					});
+					intent.on('error', function(e) {
+						console.error(e);
+					});
 				})
 				.catch(function(err) {
 					console.error('failed to fetch file', err);
