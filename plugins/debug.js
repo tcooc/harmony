@@ -17,6 +17,7 @@ module.exports = function(owner) {
 			}
 			try {
 				var result = eval(content.slice(1).join(' ')); // jshint ignore:line
+				console.log(result);
 				messaging.client.sendMessage(message.channel, result);
 			} catch(e) {
 				messaging.client.sendMessage(message.channel, '```'+ e.stack + '```');
@@ -63,6 +64,9 @@ module.exports = function(owner) {
 				exec('youtube-dl \'' + youtubeUrl +'\' --max-filesize 50m -f worst -w -o ' + output)
 				.then(function(stdout, stderr) {
 					return messaging.client.voiceConnection.playFile(output);
+				})
+				.then(function(event) {
+					console.log(event, arguments);
 				})
 				.catch(function(err) {
 					console.error('failed to fetch file', err);
