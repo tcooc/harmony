@@ -12,7 +12,7 @@ module.exports = function(owner) {
 					var result = eval(content.splice(1).join(' ')); // jshint ignore:line
 					messaging.client.sendMessage(message.channel, result);
 				} catch(e) {
-					messaging.client.sendMessage(message.channel, e.stack);
+					messaging.client.sendMessage(message.channel, '```'+ e.stack + '```');
 				}
 			}
 		});
