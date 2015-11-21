@@ -6,7 +6,7 @@ var bot = require('./lib/bot');
 var Messaging = require('./lib/Messaging');
 var secrets = require('./secrets');
 
-var debugPlugin = require('./plugins/debug');
+var debugPlugin = require('./plugins/debug')(secrets.owner);
 var discordPlugin = require('./plugins/discord');
 var funPlugin = require('./plugins/fun');
 var twitterPlugin = require('./plugins/twitter')(secrets.twitter_follow, secrets.discord_channels, /Mod|Blueprint|Aura|Key/);
