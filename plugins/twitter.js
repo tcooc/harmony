@@ -26,7 +26,8 @@ function createTwitterPlugin(twitterId, channelIds, accept) {
 				}
 			});
 			stream.on('error', function(error) {
-				throw error;
+				console.error('Twitter error:');
+				console.error(error);
 			});
 		});
 	};

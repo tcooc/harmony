@@ -13,63 +13,71 @@ module.exports = function(owner) {
 		});
 
 		messaging.addCommandHandler(/^!eval/i, function(message, content) {
-			if(message.author.id === owner && content.length > 1) {
-				try {
-					var result = eval(content.slice(1).join(' ')); // jshint ignore:line
-					messaging.client.sendMessage(message.channel, result);
-				} catch(e) {
-					messaging.client.sendMessage(message.channel, '```'+ e.stack + '```');
-				}
+			if(message.author.id !== owner || content.length <= 1) {
 				return;
 			}
+			try {
+				var result = eval(content.slice(1).join(' ')); // jshint ignore:line
+				messaging.client.sendMessage(message.channel, result);
+			} catch(e) {
+				messaging.client.sendMessage(message.channel, '```'+ e.stack + '```');
+			}
+			return true;
 		});
 
 		messaging.addCommandHandler(/^!stats/i, function(message, content) {
-			if(message.author.id === owner) {
-				var servers = messaging.client.servers.length;
-				var users = messaging.client.users.length;
-				messaging.client.sendMessage(message.channel, 'Connected to ' + servers + ' servers with a total of ' + users + ' users.');
+			if(message.author.id !== owner) {
+				return;
 			}
+			var servers = messaging.client.servers.length;
+			var users = messaging.client.users.length;
+			messaging.client.sendMessage(message.channel, 'Connected to ' + servers + ' servers with a total of ' + users + ' users.');
+			return true;
 		});
 
 		messaging.addCommandHandler(/^!joinvoice/i, function(message, content) {
-			if(message.author.id === owner) {
-				var channel = messaging.client.channels.get('id', content[1]);
-				messaging.client.joinVoiceChannel(channel);
-				messaging.client.sendMessage(message.channel, 'Joining ' + channel);
+			if(message.author.id !== owner) {
+				return;
 			}
+			var channel = messaging.client.channels.get('id', content[1]);
+			messaging.client.joinVoiceChannel(channel);
+			messaging.client.sendMessage(message.channel, 'Joining ' + channel);
+			return true;
 		});
 
 		messaging.addCommandHandler(/^!play/i, function(message, content) {
-			if(message.author.id === owner) {
-				var url = URL.parse(content[1], true);
-				var videoId = url.query ? url.query.v: null;
-				if(!messaging.client.voiceConnection) {
-					messaging.client.sendMessage(message.channel, 'Dude, I\'m not connected to a voice channel');				
-				} else if(url.hostname !== 'www.youtube.com' || url.pathname !== '/watch') {
-					messaging.client.sendMessage(message.channel, 'Your link is broked');
-				} else {
-					var youtubeUrl = 'https://www.youtube.com/watch?v=' + videoId;
-					var output = '/www/.temp/' + uuid.v4();
+			if(message.author.id !== owner || content.length <= 1) {
+				return;
+			}
+			var url = URL.parse(content[1], true);
+			var videoId = url.query ? url.query.v: null;
+			if(!messaging.client.voiceConnection) {
+				messaging.client.sendMessage(message.channel, 'Dude, I\'m not connected to a voice channel');
+			} else if(url.hostname !== 'www.youtube.com' || url.pathname !== '/watch') {
+				messaging.client.sendMessage(message.channel, 'Your link is broked');
+			} else {
+				var youtubeUrl = 'https://www.youtube.com/watch?v=' + videoId;
+				var output = '/www/.temp/' + uuid.v4();
 
-					messaging.client.sendMessage(message.channel, 'Playing video');
+				messaging.client.sendMessage(message.channel, 'Playing video');
 
-					exec('youtube-dl \'' + url +'\' --max-filesize 50m -f worst -o ' + output)
-					.then(function(stdout, stderr) {
-						return messaging.client.voiceConnection.playFile(output);
-					})
-					.catch(function(err) {
-						console.error('failed to fetch file', err);
-					});
-				}
+				exec('youtube-dl \'' + url +'\' --max-filesize 50m -f worst -o ' + output)
+				.then(function(stdout, stderr) {
+					return messaging.client.voiceConnection.playFile(output);
+				})
+				.catch(function(err) {
+					console.error('failed to fetch file', err);
+				});
 			}
 		});
 
 		messaging.addCommandHandler(/^!leavevoice/i, function(message, content) {
-			if(message.author.id === owner) {
-				messaging.client.leaveVoiceChannel();
-				messaging.client.sendMessage(message.channel, 'Leaving voice channel');
+			if(message.author.id !== owner) {
+				return;
 			}
+			messaging.client.leaveVoiceChannel();
+			messaging.client.sendMessage(message.channel, 'Leaving voice channel');
+			return true;
 		});
 
 	};
