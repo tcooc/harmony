@@ -15,4 +15,9 @@ module.exports = function(messaging) {
 		messaging.client.sendMessage(message.channel, '(╯°□°）╯︵ ┻━┻');
 		return true;
 	});
+
+	messaging.addCommandHandler(/^!ready/i, function(message, content) {
+		messaging.client.sendMessage(message.channel, 'http://tinyurl.com/BodyisReady123	');
+		return true;
+	});
 };
