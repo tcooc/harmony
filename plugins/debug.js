@@ -61,7 +61,7 @@ module.exports = function(owner) {
 
 				messaging.client.sendMessage(message.channel, 'Playing video');
 
-				exec('youtube-dl \'' + url +'\' --max-filesize 50m -f worst -o ' + output)
+				exec('youtube-dl \'' + youtubeUrl +'\' --max-filesize 50m -f worst -o ' + output)
 				.then(function(stdout, stderr) {
 					return messaging.client.voiceConnection.playFile(output);
 				})
