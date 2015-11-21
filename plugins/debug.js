@@ -51,6 +51,7 @@ module.exports = function(owner) {
 			}
 			var url = URL.parse(content[1], true);
 			var videoId = url.query ? url.query.v: null;
+
 			if(!messaging.client.voiceConnection) {
 				messaging.client.sendMessage(message.channel, 'Dude, I\'m not connected to a voice channel');
 			} else if(url.hostname !== 'www.youtube.com' || url.pathname !== '/watch') {
@@ -59,15 +60,14 @@ module.exports = function(owner) {
 				var youtubeUrl = 'https://www.youtube.com/watch?v=' + videoId;
 				var output = '/www/.temp/' + videoId;
 
-				messaging.client.sendMessage(message.channel, 'Playing video');
-
-				exec('youtube-dl \'' + youtubeUrl +'\' --max-filesize 50m -f worst -w -o ' + output)
+				exec('youtube-dl \'' + youtubeUrl +'\' --max-filesize 50m -f worst -w -x -o ' + output)
 				.then(function(stdout, stderr) {
+					messaging.client.sendMessage(message.channel, 'Playing...');
 					return messaging.client.voiceConnection.playFile(output);
 				})
 				.then(function(intent) {
-					intent.on('time', function(t) {
-						console.log('time ' + t);
+					intent.once('time', function(t) {
+						console.log('starting ' + t);
 					});
 					intent.on('end', function() {
 						messaging.client.sendMessage(message.channel, 'Finished playing');
