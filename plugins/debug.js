@@ -60,7 +60,7 @@ module.exports = function(owner) {
 				var youtubeUrl = 'https://www.youtube.com/watch?v=' + videoId;
 				var output = '/www/.temp/' + videoId;
 
-				exec('youtube-dl \'' + youtubeUrl +'\' --max-filesize 50m -f worst -w -x -o ' + output)
+				exec('youtube-dl \'' + youtubeUrl +'\' --max-filesize 50m -f worst -w -o ' + output)
 				.then(function(stdout, stderr) {
 					messaging.client.sendMessage(message.channel, 'Playing...');
 					return messaging.client.voiceConnection.playFile(output);
