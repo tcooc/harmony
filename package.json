@@ -1,10 +1,12 @@
 {
   "private": true,
   "dependencies": {
+    "bluebird": "^3.0.5",
     "discord.js": "^5.0.0",
     "request": "^2.65.0",
     "twitter": "^1.2.5",
-    "underscore": "^1.8.3"
+    "underscore": "^1.8.3",
+    "uuid": "^2.0.1"
   },
   "devDependencies": {
     "grunt": "^0.4.5",

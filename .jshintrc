@@ -12,6 +12,6 @@
     "eqeqeq": true,
     "node": true,
     "globals": {
-        "Promise": false
+        "Promise": true
     }
 }

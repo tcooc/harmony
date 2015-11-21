@@ -10,4 +10,9 @@ module.exports = function(messaging) {
 		messaging.client.sendMessage(message.channel, '┬─┬ ◟(`ﮧ´ ◟ )');
 		return true;
 	});
+
+	messaging.addCommandHandler(/^!unflip/i, function(message, content) {
+		messaging.client.sendMessage(message.channel, '(╯°□°）╯︵ ┻━┻');
+		return true;
+	});
 };
