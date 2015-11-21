@@ -62,11 +62,11 @@ module.exports = function(owner) {
 
 				exec('youtube-dl \'' + youtubeUrl +'\' --max-filesize 50m -f worst -w -o ' + output)
 				.then(function(stdout, stderr) {
-					return exec('ffmpeg -i ' + output + ' -f s16le -ar 48000 -ac 1 -af volume=1 ' + output + '.out');
+					return null; //exec('ffmpeg -i ' + output + ' -f s16le -ar 48000 -ac 1 -af volume=1 ' + output + '.out');
 				})
 				.then(function() {
 					messaging.client.sendMessage(message.channel, 'Playing...');
-					return messaging.client.voiceConnection.playFile(output + '.out');
+					return messaging.client.voiceConnection.playFile(output);
 				})
 				.then(function(intent) {
 					intent.once('time', function(t) {
