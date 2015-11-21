@@ -56,7 +56,7 @@ module.exports = function(owner) {
 
 					exec('youtube-dl \'' + url +'\' --max-filesize 50m -f worst -o ' + output)
 					.then(function(stdout, stderr) {
-						return messaging.client.voiceConnection.playFile(stream);
+						return messaging.client.voiceConnection.playFile(output);
 					})
 					.catch(function(err) {
 						console.error('failed to fetch file', err);
