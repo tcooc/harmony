@@ -4,7 +4,7 @@
     "forin": true,
     "freeze": true,
     "maxdepth" : 4,
-    "maxlen": 120,
+    "maxlen": 140,
     "newcap": true,
     "noarg": true,
     "nonew": true,
