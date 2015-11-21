@@ -60,7 +60,7 @@ module.exports = function(owner) {
 				var youtubeUrl = 'https://www.youtube.com/watch?v=' + videoId;
 				var output = '/www/.temp/' + videoId;
 
-				exec('youtube-dl \'' + youtubeUrl +'\' --max-filesize 50m -f worst -w -o ' + output)
+				exec('youtube-dl \'' + youtubeUrl +'\' --max-filesize 50m -f bestaudio/mp4 -w -o ' + output)
 				.then(function(stdout, stderr) {
 					return null; //exec('ffmpeg -i ' + output + ' -f s16le -ar 48000 -ac 1 -af volume=1 ' + output + '.out');
 				})
