@@ -4,7 +4,7 @@ var fs = Promise.promisifyAll(require('fs'));
 var URL = require('url');
 
 module.exports = function(owner) {
-	return function(messaging) {
+	return function(messaging, client) {
 		messaging.addHook(function(message) {
 			console.log(message.author.username + '(' + message.author.id + ')',
 				message.channel.name + '(' + message.channel.id + ')',
@@ -18,9 +18,9 @@ module.exports = function(owner) {
 			try {
 				var result = eval(content.slice(1).join(' ')); // jshint ignore:line
 				console.log(result);
-				messaging.client.sendMessage(message.channel, result);
+				client.sendMessage(message.channel, result);
 			} catch(e) {
-				messaging.client.sendMessage(message.channel, '```'+ e.stack + '```');
+				client.sendMessage(message.channel, '```'+ e.stack + '```');
 			}
 			return true;
 		});
@@ -29,9 +29,9 @@ module.exports = function(owner) {
 			if(message.author.id !== owner) {
 				return;
 			}
-			var servers = messaging.client.servers.length;
-			var users = messaging.client.users.length;
-			messaging.client.sendMessage(message.channel, 'Connected to ' + servers + ' servers with a total of ' + users + ' users.');
+			var servers = client.servers.length;
+			var users = client.users.length;
+			client.sendMessage(message.channel, 'Connected to ' + servers + ' servers with a total of ' + users + ' users.');
 			return true;
 		});
 
@@ -39,9 +39,9 @@ module.exports = function(owner) {
 			if(message.author.id !== owner) {
 				return;
 			}
-			var channel = messaging.client.channels.get('id', content[1]);
-			messaging.client.joinVoiceChannel(channel);
-			messaging.client.sendMessage(message.channel, 'Joining ' + channel);
+			var channel = client.channels.get('id', content[1]);
+			client.joinVoiceChannel(channel);
+			client.sendMessage(message.channel, 'Joining ' + channel);
 			return true;
 		});
 
@@ -52,10 +52,10 @@ module.exports = function(owner) {
 			var url = URL.parse(content[1], true);
 			var videoId = url.query ? url.query.v: null;
 
-			if(!messaging.client.voiceConnection) {
-				messaging.client.sendMessage(message.channel, 'Dude, I\'m not connected to a voice channel');
+			if(!client.voiceConnection) {
+				client.sendMessage(message.channel, 'Dude, I\'m not connected to a voice channel');
 			} else if(url.hostname !== 'www.youtube.com' || url.pathname !== '/watch') {
-				messaging.client.sendMessage(message.channel, 'Your link is broked');
+				client.sendMessage(message.channel, 'Your link is broked');
 			} else {
 				var youtubeUrl = 'https://www.youtube.com/watch?v=' + videoId;
 				var output = '/www/.temp/' + videoId;
@@ -65,15 +65,15 @@ module.exports = function(owner) {
 					return null; //exec('ffmpeg -i ' + output + ' -f s16le -ar 48000 -ac 1 -af volume=1 ' + output + '.out');
 				})
 				.then(function() {
-					messaging.client.sendMessage(message.channel, 'Playing...');
-					return messaging.client.voiceConnection.playFile(output);
+					client.sendMessage(message.channel, 'Playing...');
+					return client.voiceConnection.playFile(output);
 				})
 				.then(function(intent) {
 					intent.once('time', function(t) {
 						console.log('starting ' + t);
 					});
 					intent.on('end', function() {
-						messaging.client.sendMessage(message.channel, 'Finished playing');
+						client.sendMessage(message.channel, 'Finished playing');
 					});
 					intent.on('error', function(e) {
 						console.error(e);
@@ -89,8 +89,8 @@ module.exports = function(owner) {
 			if(message.author.id !== owner) {
 				return;
 			}
-			messaging.client.leaveVoiceChannel();
-			messaging.client.sendMessage(message.channel, 'Leaving voice channel');
+			client.leaveVoiceChannel();
+			client.sendMessage(message.channel, 'Leaving voice channel');
 			return true;
 		});
 
