@@ -8,9 +8,14 @@ function createTwitterPlugin(twitterKeys, twitterId, channelIds, accept) {
 		var channels = [];
 		client.on('ready', function() {
 			_.each(channelIds, function(id) {
-				channels.push(client.channels.get('id', id));
+				var channel = client.channels.get('id', id);
+				if(channel) {
+					channels.push(channel);
+				} else {
+					console.error('channel ' + id + ' not found');
+				}
 			});
-			console.log('Twitter pushing to ', channels);
+			console.log('Twitter pushing to ' + channels.length + '/' + channelIds.length + ' channels.');
 		});
 		twitter.createStream(twitterClient, twitterId).then(function(stream) {
 			stream.on('data', function(tweet) {
