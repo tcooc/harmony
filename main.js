@@ -10,7 +10,7 @@ var debugPlugin = require('./plugins/debug')(secrets.owner);
 var discordPlugin = require('./plugins/discord');
 var funPlugin = require('./plugins/fun');
 var twitterPlugin = require('./plugins/twitter')(secrets.twitter,
-	secrets.twitter_follow, secrets.discord_channels, /Mod|Blueprint|Aura|Key/);
+	secrets.twitter_follow, secrets.discord_channels, /Mod|Blueprint|Aura|Key|Nitain/);
 var warframePlugin = require('./plugins/warframe');
 
 var client = bot.create(500, 100);
