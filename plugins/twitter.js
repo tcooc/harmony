@@ -65,7 +65,7 @@ function createTwitterPlugin(twitterKeys, twitterId, channelIds, accept) {
 		}
 
 		messaging.addCommandHandler(/^!twitter:clean/i, function(message, content) {
-			if(message.author.id !== owner) {
+			if(message.author.id !== messaging.settings.owner) {
 				return;
 			}
 			cleanup(channels, message.channel)

@@ -6,7 +6,7 @@ var bot = require('./lib/bot');
 var Messaging = require('./lib/Messaging');
 var secrets = require('./secrets');
 
-var debugPlugin = require('./plugins/debug')(secrets.owner);
+var debugPlugin = require('./plugins/debug');
 var discordPlugin = require('./plugins/discord');
 var funPlugin = require('./plugins/fun');
 var twitterPlugin = require('./plugins/twitter')(secrets.twitter,
@@ -14,7 +14,7 @@ var twitterPlugin = require('./plugins/twitter')(secrets.twitter,
 var warframePlugin = require('./plugins/warframe');
 
 var client = bot.create(500, 100);
-var messaging = new Messaging(client);
+var messaging = new Messaging(client, {owner: secrets.owner});
 
 messaging.addPlugin(debugPlugin);
 messaging.addPlugin(discordPlugin);
