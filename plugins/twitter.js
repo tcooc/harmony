@@ -53,7 +53,7 @@ function createTwitterPlugin(twitterKeys, twitterId, channelIds, accept) {
 						console.log(message.content + ' posted at ' + new Date(message.timestamp));
 						console.log('matched ' + match);
 						if(match) {
-							var duration = (+match[1]) * 60 * 60 * 1000;
+							var duration = (+match[1]) * 60 * 1000;
 							console.log('duration ' + duration);
 							var timestamp = message.timestamp;
 							if(Date.now() - timestamp > duration) {
