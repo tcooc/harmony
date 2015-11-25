@@ -27,7 +27,7 @@ module.exports = function(owner) {
 		});
 
 		messaging.addCommandHandler(/^!run/i, function(message, content) {
-			if(message.author.id !== owner || content.length <= 1) {
+			if(content.length <= 1) {
 				return;
 			}
 			setTimeout(function() {
