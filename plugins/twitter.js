@@ -2,6 +2,8 @@ var _ = require('underscore');
 var Twitter = require('twitter');
 var twitter = require('../lib/twitter');
 
+var ALERT_TWEET_REGEX = /- ([0-9]+)m -/;
+
 function createTwitterPlugin(twitterKeys, twitterId, channelIds, accept) {
 	var twitterClient = new Twitter(twitterKeys);
 	return function(messaging, client) {
@@ -32,38 +34,29 @@ function createTwitterPlugin(twitterKeys, twitterId, channelIds, accept) {
 			});
 		});
 
-		var tweetRegex = /- ([0-9]+)m -/;
-		function cleanup(channels, output) {
+		function cleanup(channels, amount, output) {
 			var promise = Promise.resolve();
 			_.each(channels, function(channel) {
 				promise = promise.then(function() {
 					client.sendMessage(output, 'cleaning ' + channel);
-					return client.getChannelLogs(channel, 20);
+					return client.getChannelLogs(channel, amount);
 				})
 				.then(function(messages) {
-					console.log('retrieved ' + messages.length + ' messages');
 					return _.filter(messages, function(message) {
 						return message.author.id === client.user.id;
 					});
 				})
 				.then(function(messages) {
-					console.log(messages.length + ' messages to be checked');
 					return Promise.all(_.map(messages, function(message) {
-						var match = tweetRegex.exec(message.content);
-						console.log(message.content + ' posted at ' + new Date(message.timestamp));
-						console.log('matched ' + match);
+						var match = ALERT_TWEET_REGEX.exec(message.content);
 						if(match) {
 							var duration = (+match[1]) * 60 * 1000;
-							console.log('duration ' + duration);
 							var timestamp = message.timestamp;
 							if(Date.now() - timestamp > duration) {
 								return client.deleteMessage(message);
 							}
 						}
 					}));
-				})
-				.then(function() {
-					client.sendMessage(output, 'finished cleaning ' + channel);
 				});
 			});
 			return promise;
@@ -73,7 +66,7 @@ function createTwitterPlugin(twitterKeys, twitterId, channelIds, accept) {
 			if(message.author.id !== messaging.settings.owner) {
 				return;
 			}
-			cleanup(channels, message.channel)
+			cleanup(channels, 500, message.channel)
 			.then(function() {
 				client.sendMessage(message.channel, 'finished cleaning');
 			});
