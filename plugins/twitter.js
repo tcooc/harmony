@@ -23,9 +23,7 @@ function createTwitterPlugin(twitterKeys, twitterId, channelIds, accept) {
 			stream.on('data', function(tweet) {
 				console.log('Tweet:' + tweet.text, tweet.user.id_str, tweet.retweeted_status, accept);
 				if(tweet.user.id_str === twitterId && !tweet.retweeted_status && accept.test(tweet.text)) {
-					_.each(channels, function(channel) {
-						client.sendMessage(channel, tweet.text);
-					});
+					messaging.broadcast(channels, tweet.text);
 				}
 			});
 			stream.on('error', function(error) {
@@ -38,7 +36,6 @@ function createTwitterPlugin(twitterKeys, twitterId, channelIds, accept) {
 			var promise = Promise.resolve();
 			_.each(channels, function(channel) {
 				promise = promise.then(function() {
-					client.sendMessage(output, 'cleaning ' + channel);
 					return client.getChannelLogs(channel, amount);
 				})
 				.then(function(messages) {
