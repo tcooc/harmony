@@ -2,6 +2,7 @@ var Promise = require('bluebird');
 var exec = Promise.promisify(require('child_process').exec, {multiArgs: true});
 var fs = Promise.promisifyAll(require('fs'));
 var URL = require('url');
+var vm = require('vm');
 
 module.exports = function(owner) {
 	return function(messaging, client) {
@@ -17,6 +18,20 @@ module.exports = function(owner) {
 			}
 			try {
 				var result = eval(content.slice(1).join(' ')); // jshint ignore:line
+				console.log(result);
+				client.sendMessage(message.channel, result);
+			} catch(e) {
+				client.sendMessage(message.channel, '```'+ e.stack + '```');
+			}
+			return true;
+		});
+
+		messaging.addCommandHandler(/^!run/i, function(message, content) {
+			if(message.author.id !== owner || content.length <= 1) {
+				return;
+			}
+			try {
+				var result = vm.runInNewContext(content.slice(1).join(' '), {}, {timeout: 1000});
 				console.log(result);
 				client.sendMessage(message.channel, result);
 			} catch(e) {
