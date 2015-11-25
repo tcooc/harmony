@@ -30,13 +30,24 @@ module.exports = function(owner) {
 			if(message.author.id !== owner || content.length <= 1) {
 				return;
 			}
-			try {
-				var result = vm.runInNewContext(content.slice(1).join(' '), {}, {timeout: 1000});
-				console.log(result);
+			setTimeout(function() {
+				var result;
+				try {
+					result = vm.runInNewContext(content.slice(1).join(' '), {}, {timeout: 1000, filename: 'run'});
+				} catch(e) {
+					console.log(e.stack);
+					if(!(e instanceof SyntaxError)) {
+						var stack = e.stack.split('\n');
+						// if run in a new context, the stack only goes 4 levels deep
+						stack.splice(stack.length - 4);
+						result = stack.join('\n');
+					} else {
+						result = e.toString();
+					}
+					result = '```'+ result + '```';
+				}
 				client.sendMessage(message.channel, result);
-			} catch(e) {
-				client.sendMessage(message.channel, '```'+ e.stack + '```');
-			}
+			}, 0);
 			return true;
 		});
 
