@@ -31,6 +31,49 @@ function createTwitterPlugin(twitterKeys, twitterId, channelIds, accept) {
 				console.error(error);
 			});
 		});
+
+		var tweetRegex = /- ([0-9]+)m -/;
+		function cleanup(channels, output) {
+			var promise = Promise.resolve();
+			_.each(channels, function(channel) {
+				promise = promise.then(function() {
+					client.sendMessage(output, 'cleaning ' + channel);
+					return client.getChannelLogs(channel, 20);
+				})
+				.then(function(messages) {
+					return _.filter(messages, function(message) {
+						return message.author.id === client.user.id;
+					});
+				})
+				.then(function(messages) {
+					return Promise.all(_.map(messages, function(message) {
+						var match = tweetRegex.exec(message.content);
+						if(match) {
+							var duration = (+match[1]) * 60 * 60 * 1000;
+							var timestamp = message.timestamp;
+							if(Date.now() - timestamp > duration) {
+								return client.deleteMessage(message);
+							}
+						}
+					}));
+				})
+				.then(function() {
+					client.sendMessage(output, 'finished cleaning ' + channel);
+				});
+			});
+			return promise;
+		}
+
+		messaging.addCommandHandler(/^!twitter:clean/i, function(message, content) {
+			if(message.author.id !== owner) {
+				return;
+			}
+			cleanup(channels, message.channel)
+			.then(function() {
+				client.sendMessage(message.channel, 'finished cleaning');
+			});
+			return true;
+		});
 	};
 }
 

@@ -23,7 +23,7 @@ messaging.addPlugin(twitterPlugin);
 messaging.addPlugin(warframePlugin);
 
 client.on('message', function(message) {
-	if(message.author.username === client.user.username) {
+	if(message.author.id === client.user.id) {
 		return;
 	}
 	messaging.process(message);
