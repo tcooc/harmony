@@ -44,7 +44,7 @@ function aimlPlugin(messaging, client) {
 		return aiml.parseFilesAsync(filePaths);
 	});
 
-	var ready = new Promise(function(resolve, reject) {
+	var ready = new Promise(function(resolve) {
 		client.on('ready', resolve);
 	});
 	Promise.all([topics, ready])

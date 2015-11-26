@@ -7,7 +7,7 @@ module.exports = function(messaging, client) {
 				if(err) {
 					client.sendMessage(message.channel, 'Something went wrong, please contact admins');
 				} else {
-					client.sendMessage(message.channel, 'Joined successfully');
+					client.sendMessage(message.channel, 'Joined ' + server.name + ' successfully');
 				}
 			});
 			return true;

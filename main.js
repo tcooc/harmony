@@ -1,7 +1,3 @@
-var _ = require('underscore');
-var Discord = require('discord.js');
-var request = require('request');
-
 var bot = require('./lib/bot');
 var Messaging = require('./lib/Messaging');
 var secrets = require('./secrets');
@@ -11,6 +7,7 @@ var debugPlugin = require('./plugins/debug');
 var discordPlugin = require('./plugins/discord');
 var funPlugin = require('./plugins/fun');
 var twitterPlugin = require('./plugins/twitter')(secrets.twitterFollow, secrets.twitterBroadcasts);
+var voicePlugin = require('./plugins/voice');
 var warframePlugin = require('./plugins/warframe');
 
 var client = bot.create(500, 100);
@@ -21,6 +18,7 @@ messaging.addPlugin(discordPlugin);
 messaging.addPlugin(funPlugin);
 messaging.addPlugin(twitterPlugin);
 messaging.addPlugin(warframePlugin);
+messaging.addPlugin(voicePlugin);
 messaging.addPlugin(aimlPlugin);
 
 client.on('message', function(message) {

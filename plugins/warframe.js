@@ -1,25 +1,24 @@
 var _ = require('underscore');
-var Discord = require('discord.js');
 var request = require('request');
 
 var bot = require('../lib/bot');
 
 module.exports = function(messaging, client) {
-	messaging.addCommandHandler(/^!trader/i, function(message, content) {
+	messaging.addCommandHandler(/^!trader/i, function(message) {
 		bot.helpers.simpleGET('http://wf.tcooc.net/trader').then(function(body) {
 			client.sendMessage(message.channel, body);
 		});
 		return true;
 	});
 
-	messaging.addCommandHandler(/^!deals?/i, function(message, content) {
+	messaging.addCommandHandler(/^!deals?/i, function(message) {
 		bot.helpers.simpleGET('http://wf.tcooc.net/deal').then(function(body) {
 			client.sendMessage(message.channel, body);
 		});
 		return true;
 	});
 
-	messaging.addCommandHandler(/^!scans?/i, function(message, content) {
+	messaging.addCommandHandler(/^!scans?/i, function(message) {
 		bot.helpers.simpleGET('http://wf.tcooc.net/scan').then(function(body) {
 			client.sendMessage(message.channel, body);
 		});
@@ -43,7 +42,7 @@ module.exports = function(messaging, client) {
 		}
 	});
 
-	messaging.addCommandHandler(/^!trialstats?/i, function(message, content) {
+	messaging.addCommandHandler(/^!trialstats?/i, function(message) {
 		client.sendMessage(message.channel,
 			'Hek: http://tinyurl.com/qb752oj Nightmare: http://tinyurl.com/p8og6xf Jordas: http://tinyurl.com/prpebzh');
 		return true;

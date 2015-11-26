@@ -45,7 +45,7 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 			});
 		});
 
-		function cleanup(channels, amount, output) {
+		function cleanup(channels, amount) {
 			var promise = Promise.resolve();
 			_.each(channels, function(channel) {
 				promise = promise.then(function() {
@@ -77,7 +77,7 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 				return;
 			}
 			var index = content.length > 1 ? +content[1] : 0;
-			cleanup(broadcasts[index].channels, 500, message.channel)
+			cleanup(broadcasts[index].channels, 500)
 			.then(function() {
 				client.sendMessage(message.channel, 'finished cleaning ' + index);
 			});

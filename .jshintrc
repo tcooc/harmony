@@ -9,6 +9,7 @@
     "noarg": true,
     "nonew": true,
     "undef": true,
+    "unused": true,
     "eqeqeq": true,
     "node": true,
     "globals": {
