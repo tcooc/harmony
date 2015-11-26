@@ -53,6 +53,15 @@ module.exports = function(messaging, client) {
 			var youtubeUrl = 'https://www.youtube.com/watch?v=' + videoId;
 			var stream = ytdl(youtubeUrl, YTDL_OPTIONS);
 
+			stream.on('info', function(info, format) {
+				console.log('stream info', info, format);
+			});
+
+			stream.on('response', function(response) {
+				console.log('stream response', response);
+			});
+
+
 			client.voiceConnection.playRawStream(stream)
 			.then(function(intent) {
 				intent.once('time', function() {
@@ -64,9 +73,6 @@ module.exports = function(messaging, client) {
 				intent.on('error', function(e) {
 					console.error(e);
 				});
-			})
-			.catch(function(err) {
-				console.error('failed to fetch file', err);
 			});
 		}
 	});
