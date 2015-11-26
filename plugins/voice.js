@@ -54,17 +54,20 @@ module.exports = function(messaging, client) {
 			var stream = ytdl(youtubeUrl, YTDL_OPTIONS);
 
 			stream.on('info', function(info, format) {
-				console.log('stream info', info, format);
+				console.log('stream info retrieved');
 			});
 
 			stream.on('response', function(response) {
-				console.log('stream response', response);
+				console.log('stream response done');
 			});
 
 			client.voiceConnection.playRawStream(stream)
 			.then(function(intent) {
 				intent.once('time', function() {
 					client.sendMessage(message.channel, 'Playing...');
+				});
+				intent.on('time', function(t) {
+					console.log('playing ' + t);
 				});
 				intent.on('end', function() {
 					client.sendMessage(message.channel, 'Finished playing');
