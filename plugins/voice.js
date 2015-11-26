@@ -5,7 +5,7 @@ var ytdl = require('ytdl-core');
 var YTDL_OPTIONS = {
 	quality: 'lowest',
 	filter: function(format) {
-		return format.container === 'mp4';
+		return format.container === 'mp4' && !!format.audioEncoding;
 	}
 };
 
@@ -60,7 +60,6 @@ module.exports = function(messaging, client) {
 			stream.on('response', function(response) {
 				console.log('stream response', response);
 			});
-
 
 			client.voiceConnection.playRawStream(stream)
 			.then(function(intent) {
