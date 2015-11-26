@@ -10,12 +10,11 @@ var aimlPlugin = require('./plugins/aiml');
 var debugPlugin = require('./plugins/debug');
 var discordPlugin = require('./plugins/discord');
 var funPlugin = require('./plugins/fun');
-var twitterPlugin = require('./plugins/twitter')(secrets.twitter,
-	secrets.twitter_follow, secrets.discord_channels, /Mod|Blueprint|Aura|Key|Nitain/);
+var twitterPlugin = require('./plugins/twitter')(secrets.twitterFollow, secrets.twitterBroadcasts);
 var warframePlugin = require('./plugins/warframe');
 
 var client = bot.create(500, 100);
-var messaging = new Messaging(client, {owner: secrets.owner});
+var messaging = new Messaging(client, {owner: secrets.owner, twitter: secrets.twitter});
 
 messaging.addPlugin(debugPlugin);
 messaging.addPlugin(discordPlugin);

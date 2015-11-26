@@ -4,31 +4,44 @@ var twitter = require('../lib/twitter');
 
 var ALERT_TWEET_REGEX = /- ([0-9]+)m -/;
 
-function createTwitterPlugin(twitterKeys, twitterId, channelIds, accept) {
-	var twitterClient = new Twitter(twitterKeys);
+function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 	return function(messaging, client) {
-		var channels = [];
+		var twitterClient = new Twitter(messaging.settings.twitter);
+
+		var broadcasts = [];
+
 		client.on('ready', function() {
-			_.each(channelIds, function(id) {
-				var channel = client.channels.get('id', id);
-				if(channel) {
-					channels.push(channel);
-				} else {
-					console.error('channel ' + id + ' not found');
-				}
+			_.each(twitterBroadcasts, function(twitterBroadcast) {
+				broadcasts.push({
+					channels: _.map(twitterBroadcast.channels, function(channelId) {
+						var channel = client.channels.get('id', channelId);
+						if(channel) {
+							return channel;
+						} else {
+							console.error('channel ' + channelId + ' not found');
+						}
+					}),
+					accept: new RegExp(twitterBroadcast.accept)
+				});
 			});
-			console.log('Twitter pushing to ' + channels.length + '/' + channelIds.length + ' channels.');
+			console.log('Twitter broadcasting ' + broadcasts.length + ' streams.');
 		});
-		twitter.createStream(twitterClient, twitterId).then(function(stream) {
+
+		twitter.createStream(twitterClient, twitterFollow).then(function(stream) {
 			stream.on('data', function(tweet) {
-				console.log('Tweet:' + tweet.text, tweet.user.id_str, !!tweet.retweeted_status, accept);
-				if(tweet.user.id_str === twitterId && !tweet.retweeted_status && accept.test(tweet.text)) {
-					messaging.broadcast(channels, tweet.text);
+				console.log('Tweet:' + tweet.text, tweet.user.id_str, !!tweet.retweeted_status);
+				if(tweet.user.id_str === twitterFollow && !tweet.retweeted_status) {
+					_.each(broadcasts, function(broadcast) {
+						if(broadcast.accept.test(tweet.text)) {
+							messaging.broadcast(broadcast.channels, tweet.text);
+						}
+					});
 				}
 			});
 			stream.on('error', function(error) {
 				console.error('Twitter error:');
 				console.error(error);
+				throw error;
 			});
 		});
 
@@ -63,9 +76,10 @@ function createTwitterPlugin(twitterKeys, twitterId, channelIds, accept) {
 			if(message.author.id !== messaging.settings.owner) {
 				return;
 			}
-			cleanup(channels, 500, message.channel)
+			var index = content.length > 1 ? +content[1] : 0;
+			cleanup(broadcasts[index].channels, 500, message.channel)
 			.then(function() {
-				client.sendMessage(message.channel, 'finished cleaning');
+				client.sendMessage(message.channel, 'finished cleaning ' + index);
 			});
 			return true;
 		});
