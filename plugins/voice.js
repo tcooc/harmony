@@ -25,7 +25,7 @@ module.exports = function(messaging, client) {
 			return;
 		}
 		var name = content[1];
-		var channel = _.find(messaging.channel.server.channels, function(channel) {
+		var channel = _.find(message.channel.server.channels, function(channel) {
 			return channel.type === 'voice' && channel.name === name;
 		});
 		client.joinVoiceChannel(channel);
