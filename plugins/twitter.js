@@ -21,7 +21,7 @@ function createTwitterPlugin(twitterKeys, twitterId, channelIds, accept) {
 		});
 		twitter.createStream(twitterClient, twitterId).then(function(stream) {
 			stream.on('data', function(tweet) {
-				console.log('Tweet:' + tweet.text, tweet.user.id_str, tweet.retweeted_status, accept);
+				console.log('Tweet:' + tweet.text, tweet.user.id_str, !!tweet.retweeted_status, accept);
 				if(tweet.user.id_str === twitterId && !tweet.retweeted_status && accept.test(tweet.text)) {
 					messaging.broadcast(channels, tweet.text);
 				}
