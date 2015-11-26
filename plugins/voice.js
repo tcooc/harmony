@@ -67,7 +67,9 @@ module.exports = function(messaging, client) {
 					client.sendMessage(message.channel, 'Playing...');
 				});
 				intent.on('time', function(t) {
-					console.log('playing ' + t);
+					if(t % 1000 === 0) {
+						console.log('playing ' + t);
+					}
 				});
 				intent.on('end', function() {
 					client.sendMessage(message.channel, 'Finished playing');
