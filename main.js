@@ -22,6 +22,7 @@ messaging.addPlugin(discordPlugin);
 messaging.addPlugin(funPlugin);
 messaging.addPlugin(twitterPlugin);
 messaging.addPlugin(warframePlugin);
+messaging.addPlugin(aimlPlugin);
 
 client.on('message', function(message) {
 	if(message.author.id === client.user.id) {
