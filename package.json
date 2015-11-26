@@ -1,6 +1,7 @@
 {
   "private": true,
   "dependencies": {
+    "aiml": "0.0.2",
     "bluebird": "^3.0.5",
     "discord.js": "^5.0.0",
     "request": "^2.65.0",
