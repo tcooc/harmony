@@ -1,3 +1,4 @@
+var _ = require('underscore');
 var URL = require('url');
 var ytdl = require('ytdl-core');
 
@@ -9,11 +10,24 @@ var YTDL_OPTIONS = {
 };
 
 module.exports = function(messaging, client) {
-	messaging.addCommandHandler(/^!voice:join/i, function(message, content) {
-		if(message.author.id !== messaging.settings.owner) {
+	messaging.addCommandHandler(/^!voice:joinid/i, function(message, content) {
+		if(message.author.id !== messaging.settings.owner || content.length <= 1) {
 			return;
 		}
 		var channel = client.channels.get('id', content[1]);
+		client.joinVoiceChannel(channel);
+		client.sendMessage(message.channel, 'Joining ' + channel);
+		return true;
+	});
+
+	messaging.addCommandHandler(/^!voice:join/i, function(message, content) {
+		if(message.author.id !== messaging.settings.owner || content.length <= 1) {
+			return;
+		}
+		var name = content[1];
+		var channel = _.find(messaging.channel.server.channels, function(channel) {
+			return channel.type === 'voice' && channel.name === name;
+		});
 		client.joinVoiceChannel(channel);
 		client.sendMessage(message.channel, 'Joining ' + channel);
 		return true;
