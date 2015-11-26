@@ -2,7 +2,7 @@ var Promise = require('bluebird');
 var aiml = Promise.promisifyAll(require('aiml'));
 
 module.exports = function(messaging, client) {
-	var topics = aiml.parseFileAsync('aiml/knwledge.aiml');
+	var topics = aiml.parseFilesAsync('aiml/knwledge.aiml');
 	var ready = new Promise(function(resolve, reject) {
 		client.on('ready', resolve);
 	});
