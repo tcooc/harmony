@@ -10,12 +10,12 @@ var YTDL_OPTIONS = {
 };
 
 module.exports = function(messaging, client) {
-	function joinVoiceChannel(channel) {
+	function joinVoiceChannel(channel, output) {
 		if(channel) {
 			client.joinVoiceChannel(channel);
-			client.sendMessage(message.channel, 'Joining ' + channel);
+			client.sendMessage(output, 'Joining ' + channel);
 		} else {
-			client.sendMessage(message.channel, 'Channel not found');
+			client.sendMessage(output, 'Channel not found');
 		}
 	}
 
@@ -23,7 +23,7 @@ module.exports = function(messaging, client) {
 		if(message.author.id !== messaging.settings.owner || content.length <= 1) {
 			return;
 		}
-		joinVoiceChannel(client.channels.get('id', content[1]));
+		joinVoiceChannel(client.channels.get('id', content[1]), message.channel);
 		return true;
 	});
 
@@ -34,7 +34,7 @@ module.exports = function(messaging, client) {
 		var name = content[1];
 		joinVoiceChannel(_.find(message.channel.server.channels, function(channel) {
 			return channel.type === 'voice' && channel.name === name;
-		}));
+		}), message.channel);
 		return true;
 	});
 
