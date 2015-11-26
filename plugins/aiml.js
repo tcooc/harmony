@@ -5,7 +5,7 @@ var fs = Promise.promisifyAll(require('fs'));
 var path = require('path');
 
 var AIML_DIR = 'aiml';
-var AIML_LOAD_ORDER = _(fs.readFileSync(path.join(AIML_DIR, 'loadorder.txt')).split('\n')).map(function(requirement) {
+var AIML_LOAD_ORDER = _(fs.readFileSync(path.join(AIML_DIR, 'loadorder.txt')).toString().split('\n')).map(function(requirement) {
 	return requirement.trim();
 }).filter(function(requirement) {
 	return requirement.length > 0;
