@@ -24,7 +24,7 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 					accept: new RegExp(twitterBroadcast.accept)
 				});
 			});
-			console.log('Twitter broadcasting ' + broadcasts.length + ' streams.');
+			console.log('Twitter broadcasting ' + broadcasts.length + ' stream(s).');
 		});
 
 		twitter.createStream(twitterClient, twitterFollow).then(function(stream) {
