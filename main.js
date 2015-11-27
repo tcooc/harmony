@@ -1,3 +1,4 @@
+require('app-module-path').addPath(__dirname);
 var _ = require('underscore');
 var winston = require('winston');
 
