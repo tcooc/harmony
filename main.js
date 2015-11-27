@@ -1,17 +1,17 @@
 var _ = require('underscore');
 var winston = require('winston');
 
-var bot = require('./lib/bot');
-var Messaging = require('./lib/Messaging');
-var secrets = require('./secrets');
+var bot = require('lib/bot');
+var Messaging = require('lib/Messaging');
+var secrets = require('secrets');
 
-var aimlPlugin = require('./plugins/aiml');
-var debugPlugin = require('./plugins/debug');
-var discordPlugin = require('./plugins/discord');
-var funPlugin = require('./plugins/fun');
-var twitterPlugin = require('./plugins/twitter')(secrets.twitterFollow, secrets.twitterBroadcasts);
-var voicePlugin = require('./plugins/voice');
-var warframePlugin = require('./plugins/warframe');
+var aimlPlugin = require('plugins/aiml');
+var debugPlugin = require('plugins/debug');
+var discordPlugin = require('plugins/discord');
+var funPlugin = require('plugins/fun');
+var twitterPlugin = require('plugins/twitter')(secrets.twitterFollow, secrets.twitterBroadcasts);
+var voicePlugin = require('plugins/voice');
+var warframePlugin = require('plugins/warframe');
 
 var client = bot.create();
 
