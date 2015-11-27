@@ -2,7 +2,7 @@ var _ = require('underscore');
 var Twitter = require('twitter');
 var winston = require('winston');
 
-var twitter = require('../lib/twitter');
+var twitter = require('lib/twitter');
 
 var ALERT_TWEET_REGEX = /- ([0-9]+)m -/;
 

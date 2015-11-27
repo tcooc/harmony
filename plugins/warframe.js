@@ -1,7 +1,7 @@
 var _ = require('underscore');
 var request = require('request');
 
-var bot = require('../lib/bot');
+var bot = require('lib/bot');
 
 module.exports = function(messaging, client) {
 	messaging.addCommandHandler(/^!trader/i, function(message) {
