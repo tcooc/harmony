@@ -1,8 +1,9 @@
 var vm = require('vm');
+var winston = require('winston');
 
 module.exports = function(messaging, client) {
 	messaging.addHook(function(message) {
-		console.log(message.author.username + '(' + message.author.id + ')',
+		winston.info(message.author.username + '(' + message.author.id + ')',
 			message.channel.name + '(' + message.channel.id + ')',
 			message.content);
 	});
@@ -13,7 +14,7 @@ module.exports = function(messaging, client) {
 		}
 		try {
 			var result = eval(content.slice(1).join(' ')); // jshint ignore:line
-			console.log(result);
+			winston.info(result);
 			client.sendMessage(message.channel, result);
 		} catch(e) {
 			client.sendMessage(message.channel, '```'+ e.stack + '```');
@@ -30,7 +31,7 @@ module.exports = function(messaging, client) {
 			try {
 				result = vm.runInNewContext(content.slice(1).join(' '), {}, {timeout: 1000, filename: 'run'});
 			} catch(e) {
-				console.log(e.stack);
+				winston.info(e.stack);
 				if(!(e instanceof SyntaxError)) {
 					var stack = e.stack.split('\n');
 					// if run in a new context, the stack only goes 4 levels deep

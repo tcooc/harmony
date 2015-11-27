@@ -1,3 +1,6 @@
+var _ = require('underscore');
+var winston = require('winston');
+
 var bot = require('./lib/bot');
 var Messaging = require('./lib/Messaging');
 var secrets = require('./secrets');
@@ -10,16 +13,7 @@ var twitterPlugin = require('./plugins/twitter')(secrets.twitterFollow, secrets.
 var voicePlugin = require('./plugins/voice');
 var warframePlugin = require('./plugins/warframe');
 
-var client = bot.create(500, 100);
-var messaging = new Messaging(client, {owner: secrets.owner, twitter: secrets.twitter});
-
-messaging.addPlugin(debugPlugin);
-messaging.addPlugin(discordPlugin);
-messaging.addPlugin(funPlugin);
-messaging.addPlugin(twitterPlugin);
-messaging.addPlugin(warframePlugin);
-messaging.addPlugin(voicePlugin);
-messaging.addPlugin(aimlPlugin);
+var client = bot.create();
 
 client.on('message', function(message) {
 	if(message.author.id === client.user.id) {
@@ -33,12 +27,35 @@ client.on('disconnected', function() {
 });
 
 client.on('error', function(error) {
-	console.error(error);
-	throw new Error('discord client error');
+	throw error;
+});
+
+client.on('ready', function() {
+	winston.info('Harmony activated');
+});
+
+var messaging = new Messaging(client, {owner: secrets.owner, twitter: secrets.twitter});
+_.each([
+	debugPlugin, discordPlugin, funPlugin, twitterPlugin.link, warframePlugin, voicePlugin, aimlPlugin
+], function(plugin) {
+	messaging.addPlugin(plugin);
 });
 
 client.login(secrets.email, secrets.password);
 
-client.on('ready', function() {
-	console.log('Harmony activated');
+function shutdown() {
+	winston.info('Shutting down');
+	if(twitterPlugin.stream) {
+		twitterPlugin.stream.destroy();
+	}
+	client.logout().then(function() {
+		process.exit(0);
+	});
+}
+
+process.on('SIGINT', shutdown);
+
+process.on('uncaughtException', function(error) {
+	winston.error(error);
+	process.exit(1);
 });

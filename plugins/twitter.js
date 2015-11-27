@@ -1,12 +1,19 @@
 var _ = require('underscore');
 var Twitter = require('twitter');
+var winston = require('winston');
+
 var twitter = require('../lib/twitter');
 
 var ALERT_TWEET_REGEX = /- ([0-9]+)m -/;
 
 function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
-	return function(messaging, client) {
-		var twitterClient = new Twitter(messaging.settings.twitter);
+	var plugin = {
+		client: null,
+		stream: null
+	};
+
+	plugin.link = function(messaging, client) {
+		plugin.client = new Twitter(messaging.settings.twitter);
 
 		var broadcasts = [];
 
@@ -18,18 +25,22 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 						if(channel) {
 							return channel;
 						} else {
-							console.error('channel ' + channelId + ' not found');
+							winston.error('channel ' + channelId + ' not found');
 						}
 					}),
 					accept: new RegExp(twitterBroadcast.accept)
 				});
 			});
-			console.log('Twitter broadcasting ' + broadcasts.length + ' stream(s).');
+			winston.info('Twitter broadcasting ' + broadcasts.length + ' stream(s).');
 		});
 
-		twitter.createStream(twitterClient, twitterFollow).then(function(stream) {
+		twitter.createStream(plugin.client, twitterFollow).then(function(stream) {
+			plugin.stream = stream;
+			return stream;
+		})
+		.then(function(stream) {
 			stream.on('data', function(tweet) {
-				console.log('Tweet:' + tweet.text, tweet.user.id_str, !!tweet.retweeted_status);
+				winston.info('Tweet:' + tweet.text, tweet.user.id_str, !!tweet.retweeted_status);
 				if(tweet.user.id_str === twitterFollow && !tweet.retweeted_status) {
 					_.each(broadcasts, function(broadcast) {
 						if(broadcast.accept.test(tweet.text)) {
@@ -39,10 +50,11 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 				}
 			});
 			stream.on('error', function(error) {
-				console.error('Twitter error:');
-				console.error(error);
+				winston.error('Twitter error: ' + error.source);
 				throw error;
 			});
+
+			return stream;
 		});
 
 		function cleanup(channels, amount) {
@@ -84,6 +96,8 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 			return true;
 		});
 	};
+
+	return plugin;
 }
 
 module.exports = createTwitterPlugin;

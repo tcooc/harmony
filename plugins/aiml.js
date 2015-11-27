@@ -3,6 +3,7 @@ var Promise = require('bluebird');
 var aiml = Promise.promisifyAll(require('aiml'));
 var fs = Promise.promisifyAll(require('fs'));
 var path = require('path');
+var winston = require('winston');
 
 var AIML_DIR = 'aiml';
 var AIML_LOAD_ORDER;
@@ -19,7 +20,7 @@ function getAIMLLoadOrder() {
 
 try {
 	AIML_LOAD_ORDER = getAIMLLoadOrder();
-	console.log('AIML load order ' + AIML_LOAD_ORDER);
+	winston.info('AIML load order ' + AIML_LOAD_ORDER);
 } catch(e) {
 	AIML_LOAD_ORDER = null;
 }
@@ -56,7 +57,7 @@ function aimlPlugin(messaging, client) {
 			});
 			return true;
 		});
-		console.log('AIML engine loaded');
+		winston.info('AIML engine loaded');
 	});
 }
 

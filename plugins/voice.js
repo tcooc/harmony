@@ -1,6 +1,8 @@
 var _ = require('underscore');
 var URL = require('url');
+var winston = require('winston');
 var ytdl = require('ytdl-core');
+
 
 var YTDL_OPTIONS = {
 	quality: 'lowest',
@@ -54,11 +56,11 @@ module.exports = function(messaging, client) {
 			var stream = ytdl(youtubeUrl, YTDL_OPTIONS);
 
 			stream.on('info', function(info, format) {
-				console.log('stream info retrieved');
+				winston.info('stream info retrieved');
 			});
 
 			stream.on('response', function(response) {
-				console.log('stream response done');
+				winston.info('stream response done');
 			});
 
 			client.voiceConnection.playRawStream(stream)
@@ -68,14 +70,14 @@ module.exports = function(messaging, client) {
 				});
 				intent.on('time', function(t) {
 					if(t % 1000 === 0) {
-						console.log('playing ' + t);
+						winston.info('playing ' + t);
 					}
 				});
 				intent.on('end', function() {
 					client.sendMessage(message.channel, 'Finished playing');
 				});
 				intent.on('error', function(e) {
-					console.error(e);
+					winston.error(e);
 				});
 			});
 		}
