@@ -128,7 +128,10 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 		});
 
 		messaging.addCommandHandler(/^alertme/i, function(message, content) {
-			var pattern = content.join(' ');
+			if(content.length === 1) {
+				return true;
+			}
+			var pattern = content.slice(1).join(' ');
 			var previous = _.findIndex(broadcasts, function(broadcast) {
 				var channel = broadcast.channels[0];
 				return broadcast.channels === 1 && channel instanceof Discord.User && channel.equals(message.author);
