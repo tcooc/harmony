@@ -8,6 +8,8 @@ function check(key) {
 	}
 }
 
+check('logLevel');
+
 check('owner');
 check('email');
 check('password');

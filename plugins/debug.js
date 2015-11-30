@@ -1,3 +1,4 @@
+var util =require('util');
 var vm = require('vm');
 var winston = require('winston');
 
@@ -6,7 +7,7 @@ module.exports = function(messaging, client) {
 		winston.info(message.author.username + '(' + message.author.id + ')',
 			message.channel.name + '(' + message.channel.id + ')',
 			message.content);
-		winston.debug(message);
+		winston.debug(util.inspect(message, {depth: 1, colors: true}));
 	});
 
 	messaging.addCommandHandler(/^eval/i, function(message, content) {
