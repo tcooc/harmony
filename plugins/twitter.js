@@ -19,7 +19,7 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 
 		var broadcasts = [];
 
-		function cleanup(channels, amount) {
+		function cleanup(channels, amount, update) {
 			var promise = Promise.resolve();
 			_.each(channels, function(channel) {
 				promise = promise.then(function() {
@@ -38,6 +38,8 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 							var timestamp = message.editedTimestamp || message.timestamp;
 							if(Date.now() - timestamp > duration) {
 								return client.deleteMessage(message);
+							} else if(update) {
+								updateAlertMessage(message);
 							}
 						}
 					}));
@@ -66,14 +68,14 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 			if(tweet.user.id_str === twitterFollow && !tweet.retweeted_status) {
 				_.each(broadcasts, function(broadcast) {
 					if(broadcast.accept.test(tweet.text)) {
-						var broadcastPromise = messaging.broadcast(broadcast.channels, tweet.text);
-						if(ALERT_TWEET_REGEX.test(tweet.text)) {
-							broadcastPromise.then(function(results) {
-								_.each(results, function(message) {
+						messaging.broadcast(broadcast.channels, tweet.text)
+						.then(function(results) {
+							_.each(results, function(message) {
+								if(ALERT_TWEET_REGEX.test(message.content)) {
 									updateAlertMessage(message);
-								});
+								}
 							});
-						}
+						});
 					}
 				});
 			}
@@ -93,6 +95,7 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 					accept: new RegExp(twitterBroadcast.accept)
 				});
 			});
+			cleanup(broadcasts[0].channels, 500, true);
 			winston.info('Twitter broadcasting ' + broadcasts.length + ' stream(s).');
 		});
 
