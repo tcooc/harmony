@@ -95,7 +95,9 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 					accept: new RegExp(twitterBroadcast.accept)
 				});
 			});
-			cleanup(broadcasts[0].channels, 500, true);
+			_.each(broadcasts, function(broadcast) {
+				cleanup(broadcast.channels, 500, true);
+			});
 			winston.info('Twitter broadcasting ' + broadcasts.length + ' stream(s).');
 		});
 
@@ -122,6 +124,25 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 			.then(function() {
 				client.sendMessage(message.channel, 'finished cleaning stream ' + index);
 			});
+			return true;
+		});
+
+		messaging.addCommandHandler(/^alertme/i, function(message, content) {
+			var pattern = content.join(' ');
+			var previous = _.findIndex(broadcasts, function(broadcast) {
+				var channel = broadcast.channels[0];
+				return broadcast.channels === 1 && channel instanceof Discord.User && channel.equals(message.author);
+			});
+			var broadcast = {
+				channels: [message.author],
+				accept: new RegExp(pattern)
+			};
+			if(previous < 0) {
+				broadcasts.push(broadcast);
+			} else {
+				broadcasts[previous] = broadcast;
+			}
+			client.sendMessage(message.author, 'Watching for ' + pattern);
 			return true;
 		});
 	};
