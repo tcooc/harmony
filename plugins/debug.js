@@ -16,7 +16,7 @@ module.exports = function(messaging, client) {
 		}
 		try {
 			var result = eval(content.slice(1).join(' ')); // jshint ignore:line
-			winston.info(result);
+			winston.info(util.inspect(result, {depth: 1, colors: true}));
 			client.sendMessage(message.channel, result);
 		} catch(e) {
 			client.sendMessage(message.channel, '```'+ e.stack + '```');
