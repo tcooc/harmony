@@ -14,7 +14,7 @@ var twitterPlugin = require('plugins/twitter')(secrets.twitterFollow, secrets.tw
 var voicePlugin = require('plugins/voice');
 var warframePlugin = require('plugins/warframe');
 
-logger.level = secrets.logLevel;
+logger.transports.console.level = secrets.logLevel;
 
 var client = bot.create();
 

@@ -1,4 +1,3 @@
-var util =require('util');
 var vm = require('vm');
 var logger = require('logger');
 
@@ -7,7 +6,7 @@ module.exports = function(messaging, client) {
 		logger.info(message.author.username + '(' + message.author.id + ')',
 			message.channel.name + '(' + message.channel.id + ')',
 			message.content);
-		logger.debug(util.inspect(message, {depth: 1, colors: true}));
+		logger.debug(message);
 	});
 
 	messaging.addCommandHandler(/^eval/i, function(message, content) {
@@ -16,7 +15,7 @@ module.exports = function(messaging, client) {
 		}
 		try {
 			var result = eval(content.slice(1).join(' ')); // jshint ignore:line
-			logger.info(util.inspect(result, {depth: 1, colors: true}));
+			logger.info(result);
 			client.sendMessage(message.channel, result);
 		} catch(e) {
 			client.sendMessage(message.channel, '```'+ e.stack + '```');
