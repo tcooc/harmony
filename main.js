@@ -14,6 +14,8 @@ var twitterPlugin = require('plugins/twitter')(secrets.twitterFollow, secrets.tw
 var voicePlugin = require('plugins/voice');
 var warframePlugin = require('plugins/warframe');
 
+winston.level = secrets.logLevel;
+
 var client = bot.create();
 
 client.on('message', function(message) {
@@ -35,7 +37,11 @@ client.on('ready', function() {
 	winston.info('Harmony activated');
 });
 
-var messaging = new Messaging(client, {owner: secrets.owner, twitter: secrets.twitter});
+var messaging = new Messaging(client, {
+	owner: secrets.owner,
+	prefix: secrets.prefix,
+	twitter: secrets.twitter
+});
 _.each([
 	debugPlugin, discordPlugin, funPlugin, twitterPlugin.link, warframePlugin, voicePlugin, aimlPlugin
 ], function(plugin) {

@@ -6,9 +6,10 @@ module.exports = function(messaging, client) {
 		winston.info(message.author.username + '(' + message.author.id + ')',
 			message.channel.name + '(' + message.channel.id + ')',
 			message.content);
+		winston.debug(message);
 	});
 
-	messaging.addCommandHandler(/^!eval/i, function(message, content) {
+	messaging.addCommandHandler(/^eval/i, function(message, content) {
 		if(message.author.id !== messaging.settings.owner || content.length <= 1) {
 			return;
 		}
@@ -22,7 +23,7 @@ module.exports = function(messaging, client) {
 		return true;
 	});
 
-	messaging.addCommandHandler(/^!run/i, function(message, content) {
+	messaging.addCommandHandler(/^run/i, function(message, content) {
 		if(content.length <= 1) {
 			return;
 		}
@@ -47,7 +48,7 @@ module.exports = function(messaging, client) {
 		return true;
 	});
 
-	messaging.addCommandHandler(/^!stats/i, function(message) {
+	messaging.addCommandHandler(/^stats/i, function(message) {
 		if(message.author.id !== messaging.settings.owner) {
 			return;
 		}

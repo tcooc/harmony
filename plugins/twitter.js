@@ -84,7 +84,7 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 			return promise;
 		}
 
-		messaging.addCommandHandler(/^!twitter:clean/i, function(message, content) {
+		messaging.addCommandHandler(/^twitter:clean/i, function(message, content) {
 			if(message.author.id !== messaging.settings.owner) {
 				return;
 			}
