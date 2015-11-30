@@ -131,12 +131,7 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 			if(content.length === 1) {
 				return true;
 			}
-			try {
-				var pattern = new RegExp(content.slice(1).join(' '));
-			} catch(e) {
-				client.sendMessage(message.author, 'Invalid pattern');
-				return true;
-			}
+			var pattern = content.slice(1).join(' ').replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
 			var previous = _.findIndex(broadcasts, function(broadcast) {
 				var channel = broadcast.channels[0];
 				return broadcast.channels === 1 && channel instanceof Discord.User && channel.equals(message.author);
@@ -150,7 +145,7 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 			} else {
 				broadcasts[previous] = broadcast;
 			}
-			client.sendMessage(message.author, 'Watching for ' + pattern);
+			client.sendMessage(message.author, 'Watching for "' + pattern + '"');
 			return true;
 		});
 	};
