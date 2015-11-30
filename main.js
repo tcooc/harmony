@@ -1,6 +1,6 @@
 require('app-module-path').addPath(__dirname);
 var _ = require('underscore');
-var winston = require('winston');
+var logger = require('logger');
 
 var bot = require('lib/bot');
 var Messaging = require('lib/Messaging');
@@ -14,7 +14,7 @@ var twitterPlugin = require('plugins/twitter')(secrets.twitterFollow, secrets.tw
 var voicePlugin = require('plugins/voice');
 var warframePlugin = require('plugins/warframe');
 
-winston.level = secrets.logLevel;
+logger.level = secrets.logLevel;
 
 var client = bot.create();
 
@@ -34,7 +34,7 @@ client.on('error', function(error) {
 });
 
 client.on('ready', function() {
-	winston.info('Harmony activated');
+	logger.info('Harmony activated');
 });
 
 var messaging = new Messaging(client, {
@@ -51,7 +51,7 @@ _.each([
 client.login(secrets.email, secrets.password);
 
 function shutdown() {
-	winston.info('Shutting down');
+	logger.info('Shutting down');
 	if(twitterPlugin.stream) {
 		twitterPlugin.stream.destroy();
 	}
@@ -63,6 +63,6 @@ function shutdown() {
 process.on('SIGINT', shutdown);
 
 process.on('uncaughtException', function(error) {
-	winston.error(error);
+	logger.error(error);
 	process.exit(1);
 });

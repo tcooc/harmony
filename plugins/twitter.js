@@ -1,6 +1,7 @@
 var _ = require('underscore');
+var Discord = require('discord.js');
 var Twitter = require('twitter');
-var winston = require('winston');
+var logger = require('logger');
 
 var twitter = require('lib/twitter');
 
@@ -64,7 +65,7 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 		}
 
 		function handleTweet(tweet) {
-			winston.info('Tweet: ' + tweet.text, tweet.user.id_str, !tweet.retweeted_status);
+			logger.info('Tweet: ' + tweet.text, tweet.user.id_str, !tweet.retweeted_status);
 			if(tweet.user.id_str === twitterFollow && !tweet.retweeted_status) {
 				_.each(broadcasts, function(broadcast) {
 					if(broadcast.accept.test(tweet.text)) {
@@ -89,7 +90,7 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 						if(channel) {
 							return channel;
 						} else {
-							winston.error('channel ' + channelId + ' not found');
+							logger.error('channel ' + channelId + ' not found');
 						}
 					}),
 					accept: new RegExp(twitterBroadcast.accept)
@@ -98,7 +99,7 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 			_.each(broadcasts, function(broadcast) {
 				cleanup(broadcast.channels, 500, true);
 			});
-			winston.info('Twitter broadcasting ' + broadcasts.length + ' stream(s).');
+			logger.info('Twitter broadcasting ' + broadcasts.length + ' stream(s).');
 		});
 
 		twitter.createStream(plugin.client, twitterFollow).then(function(stream) {
@@ -108,7 +109,7 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 		.then(function(stream) {
 			stream.on('data', handleTweet);
 			stream.on('error', function(error) {
-				winston.error('Twitter error: ' + error.source);
+				logger.error('Twitter error: ' + error.source);
 				throw error;
 			});
 

@@ -1,13 +1,13 @@
 var util =require('util');
 var vm = require('vm');
-var winston = require('winston');
+var logger = require('logger');
 
 module.exports = function(messaging, client) {
 	messaging.addHook(function(message) {
-		winston.info(message.author.username + '(' + message.author.id + ')',
+		logger.info(message.author.username + '(' + message.author.id + ')',
 			message.channel.name + '(' + message.channel.id + ')',
 			message.content);
-		winston.debug(util.inspect(message, {depth: 1, colors: true}));
+		logger.debug(util.inspect(message, {depth: 1, colors: true}));
 	});
 
 	messaging.addCommandHandler(/^eval/i, function(message, content) {
@@ -16,7 +16,7 @@ module.exports = function(messaging, client) {
 		}
 		try {
 			var result = eval(content.slice(1).join(' ')); // jshint ignore:line
-			winston.info(util.inspect(result, {depth: 1, colors: true}));
+			logger.info(util.inspect(result, {depth: 1, colors: true}));
 			client.sendMessage(message.channel, result);
 		} catch(e) {
 			client.sendMessage(message.channel, '```'+ e.stack + '```');
@@ -33,7 +33,7 @@ module.exports = function(messaging, client) {
 			try {
 				result = vm.runInNewContext(content.slice(1).join(' '), {}, {timeout: 1000, filename: 'run'});
 			} catch(e) {
-				winston.info(e.stack);
+				logger.info(e.stack);
 				if(!(e instanceof SyntaxError)) {
 					var stack = e.stack.split('\n');
 					// if run in a new context, the stack only goes 4 levels deep
