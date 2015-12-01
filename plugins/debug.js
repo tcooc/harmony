@@ -58,5 +58,19 @@ module.exports = function(messaging, client) {
 		return true;
 	});
 
+	messaging.addCommandHandler(/^loglevel/i, function(message, content) {
+		if(message.author.id !== messaging.settings.owner) {
+			return;
+		}
+		var level = content[1];
+		if(content[1] && ['info', 'debug', 'silly'].indexOf(content[1]) > -1) {
+			logger.transports.console.level = level;
+			client.sendMessage(message.channel, 'Log level set to ' + level);
+		} else {
+			client.sendMessage(message.channel, 'Invalid log level');
+		}
+		return true;
+	});
+
 };
 
