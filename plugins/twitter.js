@@ -139,7 +139,7 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 			if(watchList.length === 0 || !correctList) {
 				client.sendMessage(message.author, 'Please give me a space-separated list of items you want to watch for.\n' +
 					'For example, `!alertme reactor catalyst forma`.\n' +
-					'To stop receiving notifications, use ');
+					'To stop receiving notifications, use `!alertme:stop`');
 			} else {
 				var pattern = watchList.join('|');
 				var twitterBroadcast = {
@@ -159,6 +159,20 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 				logger.debug('Broadcasts after add: ' + broadcasts.length);
 				client.sendMessage(message.author, 'Watching for "' + pattern + '"');
 			}
+			return true;
+		});
+
+		messaging.addCommandHandler(/^!alertme:stop/i, function(message, content) {
+			logger.debug('Broadcasts before remove: ' + broadcasts.length);
+			var index = _.findIndex(broadcasts, function(broadcast) {
+				return broadcast.for === message.author.id;
+			});
+			if(index > -1) {
+				broadcasts.splice(index, 1);
+			}
+			twitterBroadcasts.remove({for: message.author.id});
+			logger.debug('Broadcasts after add: ' + broadcasts.length);
+			client.sendMessage(message.author, 'Alerts stopped.');
 			return true;
 		});
 	};
