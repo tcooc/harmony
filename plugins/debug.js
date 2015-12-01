@@ -68,7 +68,7 @@ module.exports = function(messaging, client) {
 		}
 		var level = content[1];
 		if(content[1] && ['info', 'debug'].indexOf(content[1]) > -1) {
-			db('settings').chain().first().assign({'logLevel': level});
+			db('settings').chain().first().assign({'logLevel': level}).value();
 			logger.transports.console.level = level;
 			client.sendMessage(message.channel, 'Log level set to `' + level + '`');
 		} else {

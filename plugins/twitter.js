@@ -1,5 +1,4 @@
 var _ = require('underscore');
-var Discord = require('discord.js');
 var Twitter = require('twitter');
 var logger = require('logger');
 
@@ -19,6 +18,33 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 		plugin.client = new Twitter(messaging.settings.twitter);
 
 		var broadcasts = [];
+
+		function parseBroadcastSpec(twitterBroadcast) {
+			var newBroadcast = {
+				for: twitterBroadcast.for,
+				channels: _.map(twitterBroadcast.channels, function(channelId) {
+					var channel = client.channels.get('id', channelId);
+					if(channel) {
+						return channel;
+					} else {
+						logger.error('channel ' + channelId + ' not found');
+					}
+				}),
+				accept: new RegExp(twitterBroadcast.accept, 'i')
+			};
+			if(twitterBroadcast.for) {
+				var index = _.findIndex(broadcasts, function(broadcast) {
+					return twitterBroadcast.for === broadcast.for;
+				});
+				if(index >= 0) {
+					broadcasts[index] = newBroadcast;
+				} else {
+					broadcasts.push(newBroadcast);
+				}
+			} else {
+				broadcasts.push(newBroadcast);
+			}
+		}
 
 		function cleanup(channels, amount) {
 			var promise = Promise.resolve();
@@ -58,8 +84,8 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 		}
 
 		function updateAlertMessage(message) {
-			logger.debug('Twitter: updating message ' + message.content);
 			if(ALERT_TWEET_REGEX.test(message.content)) {
+				logger.debug('Twitter: updating message ' + message.content);
 				return doUpdateAlertMessage(message, message.editedTimestamp || message.timestamp, message.content);
 			}
 		}
@@ -84,19 +110,7 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 		}
 
 		client.on('ready', function() {
-			twitterBroadcasts.each(function(twitterBroadcast) {
-				broadcasts.push({
-					channels: _.map(twitterBroadcast.channels, function(channelId) {
-						var channel = client.channels.get('id', channelId);
-						if(channel) {
-							return channel;
-						} else {
-							logger.error('channel ' + channelId + ' not found');
-						}
-					}),
-					accept: new RegExp(twitterBroadcast.accept)
-				});
-			});
+			twitterBroadcasts.each(parseBroadcastSpec);
 			_.each(broadcasts, function(broadcast) {
 				cleanup(broadcast.channels, 500);
 			});
@@ -130,24 +144,32 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 		});
 
 		messaging.addCommandHandler(/^alertme/i, function(message, content) {
-			if(content.length === 1) {
-				return true;
-			}
-			var pattern = content.slice(1).join(' ').replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
-			var previous = _.findIndex(broadcasts, function(broadcast) {
-				var channel = broadcast.channels[0];
-				return broadcast.channels === 1 && channel instanceof Discord.User && channel.equals(message.author);
+			var watchList = content.slice(1);
+			var correctList = _.all(watchList, function(watch) {
+				return /^[A-Za-z]$/.test(watch);
 			});
-			var broadcast = {
-				channels: [message.author],
-				accept: new RegExp(pattern)
-			};
-			if(previous < 0) {
-				broadcasts.push(broadcast);
+			if(watchList.length === 0 || !correctList) {
+				client.sendMessage(message.author, 'Please give me a space-separated list of items you want to watch for.\n' +
+					'For example, `reactor catalyst forma`.');
 			} else {
-				broadcasts[previous] = broadcast;
+				var pattern = watchList.join('|');
+				var twitterBroadcast = {
+					for: message.author.id,
+					channels: [message.author.id],
+					accept: pattern
+				};
+				logger.info('Adding broadcast spec for ' + message.author.username, twitterBroadcast);
+				logger.debug('Broadcasts before add: ' + broadcasts.length);
+				var previous = twitterBroadcasts.find({for: twitterBroadcast.for});
+				if(!previous) {
+					twitterBroadcasts.chain().find({for: twitterBroadcast.for}).assign(twitterBroadcast).value();
+				} else {
+					twitterBroadcasts.push(twitterBroadcast);
+				}
+				parseBroadcastSpec(twitterBroadcast);
+				logger.debug('Broadcasts after add: ' + broadcasts.length);
+				client.sendMessage(message.author, 'Watching for "' + pattern + '"');
 			}
-			client.sendMessage(message.author, 'Watching for "' + pattern + '"');
 			return true;
 		});
 	};
