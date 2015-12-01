@@ -131,6 +131,20 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 			return stream;
 		});
 
+		messaging.addCommandHandler(/^!alertme:stop/i, function(message, content) {
+			logger.debug('Broadcasts before remove: ' + broadcasts.length);
+			var index = _.findIndex(broadcasts, function(broadcast) {
+				return broadcast.for === message.author.id;
+			});
+			if(index > -1) {
+				broadcasts.splice(index, 1);
+			}
+			twitterBroadcasts.remove({for: message.author.id});
+			logger.debug('Broadcasts after add: ' + broadcasts.length);
+			client.sendMessage(message.author, 'Alerts stopped.');
+			return true;
+		});
+
 		messaging.addCommandHandler(/^!alertme/i, function(message, content) {
 			var watchList = content.slice(1);
 			var correctList = _.all(watchList, function(watch) {
@@ -159,20 +173,6 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 				logger.debug('Broadcasts after add: ' + broadcasts.length);
 				client.sendMessage(message.author, 'Watching for "' + pattern + '"');
 			}
-			return true;
-		});
-
-		messaging.addCommandHandler(/^!alertme:stop/i, function(message, content) {
-			logger.debug('Broadcasts before remove: ' + broadcasts.length);
-			var index = _.findIndex(broadcasts, function(broadcast) {
-				return broadcast.for === message.author.id;
-			});
-			if(index > -1) {
-				broadcasts.splice(index, 1);
-			}
-			twitterBroadcasts.remove({for: message.author.id});
-			logger.debug('Broadcasts after add: ' + broadcasts.length);
-			client.sendMessage(message.author, 'Alerts stopped.');
 			return true;
 		});
 	};
