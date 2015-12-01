@@ -63,6 +63,6 @@ function shutdown() {
 process.on('SIGINT', shutdown);
 
 process.on('uncaughtException', function(error) {
-	logger.error(error);
+	console.error(error);
 	process.exit(1);
 });
