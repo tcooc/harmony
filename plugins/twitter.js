@@ -33,16 +33,7 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 				})
 				.then(function(messages) {
 					return Promise.all(_.map(messages, function(message) {
-						var match = ALERT_TWEET_REGEX.exec(message.content);
-						if(match) {
-							var duration = (+match[1]) * MINUTE;
-							var timestamp = message.editedTimestamp || message.timestamp;
-							if(Date.now() - timestamp > duration) {
-								return client.deleteMessage(message);
-							} else if(update) {
-								updateAlertMessage(message);
-							}
-						}
+						updateAlertMessage(message);
 					}));
 				});
 			});
@@ -63,9 +54,11 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 				setTimeout(doUpdateAlertMessage.bind(null, message, timestamp, content), 10 * SECOND);
 			}
 		}
-		
+
 		function updateAlertMessage(message) {
-			return doUpdateAlertMessage(message, message.editedTimestamp || message.timestamp, message.content);
+			if(ALERT_TWEET_REGEX.test(message.content)) {
+				return doUpdateAlertMessage(message, message.editedTimestamp || message.timestamp, message.content);
+			}
 		}
 
 		function handleTweet(tweet) {
@@ -76,9 +69,7 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 						messaging.broadcast(broadcast.channels, tweet.text)
 						.then(function(results) {
 							_.each(results, function(message) {
-								if(ALERT_TWEET_REGEX.test(message.content)) {
-									updateAlertMessage(message);
-								}
+								updateAlertMessage(message);
 							});
 						});
 					}
