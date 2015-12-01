@@ -23,7 +23,7 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 			var newBroadcast = {
 				for: twitterBroadcast.for,
 				channels: _.map(twitterBroadcast.channels, function(channelId) {
-					var channel = client.channels.get('id', channelId);
+					var channel = client.channels.get('id', channelId) || client.privateChannels.get('id', channelId);
 					if(channel) {
 						return channel;
 					} else {
@@ -70,7 +70,7 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 			var duration = (+ALERT_TWEET_REGEX.exec(content)[1]) * MINUTE;
 			var expiresAt = timestamp + duration;
 			var expiresIn = (expiresAt - Date.now()) / MINUTE;
-			logger.debug('Twitter: expires in ', + expiresIn);
+			logger.silly('Twitter: expires in ', + expiresIn);
 			if(expiresIn <= 0) {
 				client.deleteMessage(message);
 			} else {
@@ -78,7 +78,7 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 				if(newContent !== message.content) {
 					client.updateMessage(message, newContent);
 				}
-				logger.debug('Twitter: binding timeout ', message.content, content);
+				logger.silly('Twitter: scheduling tick ', message.content, content);
 				setTimeout(doUpdateAlertMessage.bind(null, message, timestamp, content), 10 * SECOND);
 			}
 		}
