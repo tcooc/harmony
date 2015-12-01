@@ -14,6 +14,7 @@ module.exports = function(messaging, client) {
 		if(message.author.id !== messaging.settings.owner || content.length <= 1) {
 			return;
 		}
+		logger.debug('eval', content);
 		try {
 			var result = eval(content.slice(1).join(' ')); // jshint ignore:line
 			logger.info(result);
@@ -66,7 +67,7 @@ module.exports = function(messaging, client) {
 		var level = content[1];
 		if(content[1] && ['info', 'debug'].indexOf(content[1]) > -1) {
 			logger.transports.console.level = level;
-			client.sendMessage(message.channel, 'Log level set to ' + level);
+			client.sendMessage(message.channel, 'Log level set to `' + level + '`');
 		} else {
 			client.sendMessage(message.channel, 'Invalid log level');
 		}
