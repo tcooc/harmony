@@ -131,14 +131,15 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 			return stream;
 		});
 
-		messaging.addCommandHandler(/^alertme/i, function(message, content) {
+		messaging.addCommandHandler(/^!alertme/i, function(message, content) {
 			var watchList = content.slice(1);
 			var correctList = _.all(watchList, function(watch) {
 				return /^[A-Za-z]+$/.test(watch);
 			});
 			if(watchList.length === 0 || !correctList) {
 				client.sendMessage(message.author, 'Please give me a space-separated list of items you want to watch for.\n' +
-					'For example, `reactor catalyst forma`.');
+					'For example, `!alertme reactor catalyst forma`.\n' +
+					'To stop receiving notifications, use ');
 			} else {
 				var pattern = watchList.join('|');
 				var twitterBroadcast = {

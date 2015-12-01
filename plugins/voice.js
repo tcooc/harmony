@@ -21,7 +21,7 @@ module.exports = function(messaging, client) {
 		}
 	}
 
-	messaging.addCommandHandler(/^voice:joinid/i, function(message, content) {
+	messaging.addCommandHandler(/^!voice:joinid/i, function(message, content) {
 		if(message.author.id !== messaging.settings.owner || content.length <= 1) {
 			return;
 		}
@@ -29,7 +29,7 @@ module.exports = function(messaging, client) {
 		return true;
 	});
 
-	messaging.addCommandHandler(/^voice:join/i, function(message, content) {
+	messaging.addCommandHandler(/^!voice:join/i, function(message, content) {
 		if(message.author.id !== messaging.settings.owner || content.length <= 1) {
 			return;
 		}
@@ -40,7 +40,7 @@ module.exports = function(messaging, client) {
 		return true;
 	});
 
-	messaging.addCommandHandler(/^voice:play/i, function(message, content) {
+	messaging.addCommandHandler(/^!voice:play/i, function(message, content) {
 		if(message.author.id !== messaging.settings.owner || content.length <= 1) {
 			return;
 		}
@@ -83,7 +83,7 @@ module.exports = function(messaging, client) {
 		}
 	});
 
-	messaging.addCommandHandler(/^voice:leave/i, function(message) {
+	messaging.addCommandHandler(/^!voice:leave/i, function(message) {
 		if(message.author.id !== messaging.settings.owner) {
 			return;
 		}
