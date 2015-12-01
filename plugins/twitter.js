@@ -50,8 +50,8 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 		}
 
 		function updateAlertMessage(message, timestamp, content) {
-			var duration = (+ALERT_TWEET_REGEX.exec(originalContent)[1]) * MINUTE;
-			var expiresAt = originalTimestamp + duration;
+			var duration = (+ALERT_TWEET_REGEX.exec(content)[1]) * MINUTE;
+			var expiresAt = timestamp + duration;
 			var expiresIn = (expiresAt - Date.now()) / MINUTE;
 			if(expiresIn <= 0) {
 				client.deleteMessage(message);
