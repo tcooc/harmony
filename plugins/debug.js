@@ -1,3 +1,4 @@
+var util = require('util');
 var vm = require('vm');
 var logger = require('logger');
 
@@ -6,7 +7,7 @@ module.exports = function(messaging, client) {
 		logger.info(message.author.username + '(' + message.author.id + ')',
 			message.channel.name + '(' + message.channel.id + ')',
 			message.content);
-		logger.debug(message);
+		logger.debug(util.inspect(message, {depth: 1, colors: true}));
 	});
 
 	messaging.addCommandHandler(/^eval/i, function(message, content) {
@@ -63,7 +64,7 @@ module.exports = function(messaging, client) {
 			return;
 		}
 		var level = content[1];
-		if(content[1] && ['info', 'debug', 'silly'].indexOf(content[1]) > -1) {
+		if(content[1] && ['info', 'debug'].indexOf(content[1]) > -1) {
 			logger.transports.console.level = level;
 			client.sendMessage(message.channel, 'Log level set to ' + level);
 		} else {
