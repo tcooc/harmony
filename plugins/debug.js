@@ -20,6 +20,7 @@ module.exports = function(messaging, client) {
 			logger.info(util.inspect(result, {depth: 1, colors: true}));
 			client.sendMessage(message.channel, result.toString());
 		} catch(e) {
+			logger.info(e.stack);
 			client.sendMessage(message.channel, '```'+ e.stack + '```');
 		}
 		return true;

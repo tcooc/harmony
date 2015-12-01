@@ -49,9 +49,9 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 			return promise;
 		}
 
-		function updateAlertMessage(message) {
-			var duration = (+ALERT_TWEET_REGEX.exec(message.content)[1]) * MINUTE;
-			var expiresAt = message.timestamp + duration;
+		function updateAlertMessage(message, originalTimestamp, originalContent) {
+			var duration = (+ALERT_TWEET_REGEX.exec(originalContent)[1]) * MINUTE;
+			var expiresAt = originalTimestamp + duration;
 			var expiresIn = (expiresAt - Date.now()) / MINUTE;
 			if(expiresIn <= 0) {
 				client.deleteMessage(message);
@@ -60,7 +60,7 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 				if(content !== message.content) {
 					client.updateMessage(message, content);
 				}
-				setTimeout(updateAlertMessage.bind(null, message), 10 * SECOND);
+				setTimeout(updateAlertMessage.bind(null, message, originalContent), 10 * SECOND);
 			}
 		}
 
@@ -73,7 +73,7 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 						.then(function(results) {
 							_.each(results, function(message) {
 								if(ALERT_TWEET_REGEX.test(message.content)) {
-									updateAlertMessage(message);
+									updateAlertMessage(message, message.editedTimestamp || message.timestamp, message.content);
 								}
 							});
 						});
