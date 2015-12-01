@@ -84,7 +84,7 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 		}
 
 		client.on('ready', function() {
-			_.each(twitterBroadcasts, function(twitterBroadcast) {
+			twitterBroadcasts.each(function(twitterBroadcast) {
 				broadcasts.push({
 					channels: _.map(twitterBroadcast.channels, function(channelId) {
 						var channel = client.channels.get('id', channelId);

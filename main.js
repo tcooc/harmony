@@ -3,18 +3,20 @@ var _ = require('underscore');
 var logger = require('logger');
 
 var bot = require('lib/bot');
+var db = require('db');
 var Messaging = require('lib/Messaging');
-var secrets = require('secrets');
+
+var settings = db('settings').first();
 
 var aimlPlugin = require('plugins/aiml');
 var debugPlugin = require('plugins/debug');
 var discordPlugin = require('plugins/discord');
 var funPlugin = require('plugins/fun');
-var twitterPlugin = require('plugins/twitter')(secrets.twitterFollow, secrets.twitterBroadcasts);
+var twitterPlugin = require('plugins/twitter')(settings.twitterFollow, db('twitterBroadcasts'));
 var voicePlugin = require('plugins/voice');
 var warframePlugin = require('plugins/warframe');
 
-logger.transports.console.level = secrets.logLevel;
+logger.transports.console.level = settings.logLevel;
 
 var client = bot.create();
 
@@ -38,9 +40,10 @@ client.on('ready', function() {
 });
 
 var messaging = new Messaging(client, {
-	owner: secrets.owner,
-	prefix: secrets.prefix,
-	twitter: secrets.twitter
+	owner: settings.owner,
+	prefix: db('prefix'),
+	defaultPrefix: {prefix: '!'},
+	twitter: settings.twitter
 });
 _.each([
 	debugPlugin, discordPlugin, funPlugin, twitterPlugin.link, warframePlugin, voicePlugin, aimlPlugin
@@ -48,7 +51,7 @@ _.each([
 	messaging.addPlugin(plugin);
 });
 
-client.login(secrets.email, secrets.password);
+client.login(settings.email, settings.password);
 
 function shutdown() {
 	logger.info('Shutting down');

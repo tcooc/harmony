@@ -1,3 +1,4 @@
+var db = require('db');
 var util = require('util');
 var vm = require('vm');
 var logger = require('logger');
@@ -67,6 +68,7 @@ module.exports = function(messaging, client) {
 		}
 		var level = content[1];
 		if(content[1] && ['info', 'debug'].indexOf(content[1]) > -1) {
+			db('settings').chain().first().assign({'logLevel': level});
 			logger.transports.console.level = level;
 			client.sendMessage(message.channel, 'Log level set to `' + level + '`');
 		} else {
