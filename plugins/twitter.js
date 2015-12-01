@@ -20,7 +20,7 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 
 		var broadcasts = [];
 
-		function cleanup(channels, amount, update) {
+		function cleanup(channels, amount) {
 			var promise = Promise.resolve();
 			_.each(channels, function(channel) {
 				promise = promise.then(function() {
@@ -44,6 +44,7 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 			var duration = (+ALERT_TWEET_REGEX.exec(content)[1]) * MINUTE;
 			var expiresAt = timestamp + duration;
 			var expiresIn = (expiresAt - Date.now()) / MINUTE;
+			logger.debug('Twitter: expires in ', + expiresIn);
 			if(expiresIn <= 0) {
 				client.deleteMessage(message);
 			} else {
@@ -51,11 +52,13 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 				if(newContent !== message.content) {
 					client.updateMessage(message, newContent);
 				}
+				logger.debug('Twitter: binding timeout ', message.content, content);
 				setTimeout(doUpdateAlertMessage.bind(null, message, timestamp, content), 10 * SECOND);
 			}
 		}
 
 		function updateAlertMessage(message) {
+			logger.debug('Twitter: updating message ' + message.content);
 			if(ALERT_TWEET_REGEX.test(message.content)) {
 				return doUpdateAlertMessage(message, message.editedTimestamp || message.timestamp, message.content);
 			}
@@ -92,7 +95,7 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 				});
 			});
 			_.each(broadcasts, function(broadcast) {
-				cleanup(broadcast.channels, 500, true);
+				cleanup(broadcast.channels, 500);
 			});
 			logger.info('Twitter broadcasting ' + broadcasts.length + ' stream(s).');
 		});
