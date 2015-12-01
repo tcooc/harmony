@@ -131,22 +131,10 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 			return stream;
 		});
 
-		messaging.addCommandHandler(/^twitter:clean/i, function(message, content) {
-			if(message.author.id !== messaging.settings.owner) {
-				return;
-			}
-			var index = content.length > 1 ? +content[1] : 0;
-			cleanup(broadcasts[index].channels, 500)
-			.then(function() {
-				client.sendMessage(message.channel, 'finished cleaning stream ' + index);
-			});
-			return true;
-		});
-
 		messaging.addCommandHandler(/^alertme/i, function(message, content) {
 			var watchList = content.slice(1);
 			var correctList = _.all(watchList, function(watch) {
-				return /^[A-Za-z]$/.test(watch);
+				return /^[A-Za-z]+$/.test(watch);
 			});
 			if(watchList.length === 0 || !correctList) {
 				client.sendMessage(message.author, 'Please give me a space-separated list of items you want to watch for.\n' +
