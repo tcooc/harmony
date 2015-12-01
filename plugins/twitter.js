@@ -56,9 +56,9 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 			if(expiresIn <= 0) {
 				client.deleteMessage(message);
 			} else {
-				var content = message.content.replace(ALERT_TWEET_REGEX, '- ' + Math.round(expiresIn)  + 'm -');
-				if(content !== message.content) {
-					client.updateMessage(message, content);
+				var newContent = message.content.replace(ALERT_TWEET_REGEX, '- ' + Math.round(expiresIn)  + 'm -');
+				if(newContent !== message.content) {
+					client.updateMessage(message, newContent);
 				}
 				setTimeout(updateAlertMessage.bind(null, message, timestamp, content), 10 * SECOND);
 			}
