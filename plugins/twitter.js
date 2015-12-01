@@ -143,7 +143,7 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 				var pattern = watchList.join('|');
 				var twitterBroadcast = {
 					for: message.author.id,
-					channels: [message.author.id],
+					channels: [message.channel.id],
 					accept: pattern
 				};
 				logger.info('Adding broadcast spec for ' + message.author.username, twitterBroadcast);
