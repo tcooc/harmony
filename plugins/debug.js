@@ -16,7 +16,7 @@ module.exports = function(messaging, client) {
 		}
 		logger.debug('eval', content);
 		try {
-			var result = eval(content.slice(1).join(' ')); // jshint ignore:line
+			var result = eval('(' + content.slice(1).join(' ') + ')'); // jshint ignore:line
 			logger.info(result);
 			client.sendMessage(message.channel, result);
 		} catch(e) {
