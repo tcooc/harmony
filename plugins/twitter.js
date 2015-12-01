@@ -65,12 +65,15 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 		}
 
 		function handleTweet(tweet) {
-			logger.info('Tweet: ' + tweet.text, tweet.user.id_str, !tweet.retweeted_status);
+			logger.debug('Tweet: ' + tweet.text, tweet.user.id_str, !tweet.retweeted_status);
 			if(tweet.user.id_str === twitterFollow && !tweet.retweeted_status) {
+				logger.info('Tweet broadcasting: ' + tweet.text);
 				_.each(broadcasts, function(broadcast) {
 					if(broadcast.accept.test(tweet.text)) {
+						logger.debug('Tweet accepted by ' + broadcast.accept);
 						messaging.broadcast(broadcast.channels, tweet.text)
 						.then(function(results) {
+							logger.debug('Tweet broadcasted to ' + results.length);
 							_.each(results, function(message) {
 								updateAlertMessage(message);
 							});
