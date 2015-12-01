@@ -49,7 +49,7 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 			return promise;
 		}
 
-		function updateAlertMessage(message, originalTimestamp, originalContent) {
+		function updateAlertMessage(message, timestamp, content) {
 			var duration = (+ALERT_TWEET_REGEX.exec(originalContent)[1]) * MINUTE;
 			var expiresAt = originalTimestamp + duration;
 			var expiresIn = (expiresAt - Date.now()) / MINUTE;
@@ -60,7 +60,7 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 				if(content !== message.content) {
 					client.updateMessage(message, content);
 				}
-				setTimeout(updateAlertMessage.bind(null, message, originalContent), 10 * SECOND);
+				setTimeout(updateAlertMessage.bind(null, message, timestamp, content), 10 * SECOND);
 			}
 		}
 
