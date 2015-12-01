@@ -17,8 +17,8 @@ module.exports = function(messaging, client) {
 		logger.debug('eval', content);
 		try {
 			var result = eval('(' + content.slice(1).join(' ') + ')'); // jshint ignore:line
-			logger.info(result);
-			client.sendMessage(message.channel, result);
+			logger.info(util.inspect(result, {depth: 1, colors: true}));
+			client.sendMessage(message.channel, result.toString());
 		} catch(e) {
 			client.sendMessage(message.channel, '```'+ e.stack + '```');
 		}
