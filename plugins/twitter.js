@@ -149,7 +149,7 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 				logger.info('Adding broadcast spec for ' + message.author.username, twitterBroadcast);
 				logger.debug('Broadcasts before add: ' + broadcasts.length);
 				var previous = twitterBroadcasts.find({for: twitterBroadcast.for});
-				if(!previous) {
+				if(previous) {
 					twitterBroadcasts.chain().find({for: twitterBroadcast.for}).assign(twitterBroadcast).value();
 				} else {
 					twitterBroadcasts.push(twitterBroadcast);
