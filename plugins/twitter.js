@@ -23,7 +23,7 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 			var newBroadcast = {
 				for: twitterBroadcast.for,
 				channels: _.map(twitterBroadcast.channels, function(channelId) {
-					var channel = client.channels.get('id', channelId) || client.privateChannels.get('id', channelId);
+					var channel = client.channels.get('id', channelId) || client.users.get('id', channelId);
 					if(channel) {
 						return channel;
 					} else {
@@ -158,7 +158,7 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 				var pattern = watchList.join('|');
 				var twitterBroadcast = {
 					for: message.author.id,
-					channels: [message.channel.id],
+					channels: [message.author.id],
 					accept: pattern
 				};
 				logger.info('Adding broadcast spec for ' + message.author.username, twitterBroadcast);
