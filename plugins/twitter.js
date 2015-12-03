@@ -140,7 +140,7 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 				broadcasts.splice(index, 1);
 			}
 			twitterBroadcasts.remove({for: message.author.id});
-			logger.debug('Broadcasts after add: ' + broadcasts.length);
+			logger.debug('Broadcasts after remove: ' + broadcasts.length);
 			client.sendMessage(message.author, 'Alerts stopped.');
 			return true;
 		});
@@ -171,7 +171,7 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 				}
 				parseBroadcastSpec(twitterBroadcast);
 				logger.debug('Broadcasts after add: ' + broadcasts.length);
-				client.sendMessage(message.author, 'Watching for "' + pattern + '"');
+				client.sendMessage(message.author, 'Watching for `' + pattern + '`');
 			}
 			return true;
 		});

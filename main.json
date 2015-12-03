@@ -1,0 +1,6 @@
+{
+	"append": true,
+	"minUptime": 10000,
+	"spinSleepTime": 5000,
+	"script": "main.js"
+}
