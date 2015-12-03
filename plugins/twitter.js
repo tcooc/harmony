@@ -134,7 +134,7 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 		messaging.addCommandHandler(/^!alertme:info/i, function(message) {
 			var broadcast = twitterBroadcasts.find({for: message.author.id});
 			if(broadcast) {
-				client.sendMessage(message.author, 'Your current watch list: ' + broadcast.accept.split(' '));
+				client.sendMessage(message.author, 'Your current watch list: `' + broadcast.accept.split(' ') + '`');
 			}
 			return true;
 		});
