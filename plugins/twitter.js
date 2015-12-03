@@ -131,7 +131,7 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 			return stream;
 		});
 
-		messaging.addCommandHandler(/^!alertme:stop/i, function(message, content) {
+		messaging.addCommandHandler(/^!alertme:stop/i, function(message) {
 			logger.debug('Broadcasts before remove: ' + broadcasts.length);
 			var index = _.findIndex(broadcasts, function(broadcast) {
 				return broadcast.for === message.author.id;
@@ -151,8 +151,9 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 				return /^[A-Za-z]+$/.test(watch);
 			});
 			if(watchList.length === 0 || !correctList) {
-				client.sendMessage(message.author, 'Please give me a space-separated list of items you want to watch for.\n' +
-					'For example, `!alertme reactor catalyst forma`.\n' +
+				client.sendMessage(message.author,
+					'Give me a space-separated list of items you want to watch for.\n' +
+					'I recommend: `!alertme Reactor Catalyst Forma Nitain`.\n' +
 					'To stop receiving notifications, use `!alertme:stop`');
 			} else {
 				var pattern = watchList.join('|');

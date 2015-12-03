@@ -12,6 +12,7 @@ var aimlPlugin = require('plugins/aiml');
 var debugPlugin = require('plugins/debug');
 var discordPlugin = require('plugins/discord');
 var funPlugin = require('plugins/fun');
+var helpPlugin = require('plugins/help');
 var twitterPlugin = require('plugins/twitter')(settings.twitterFollow, db('twitterBroadcasts'));
 var voicePlugin = require('plugins/voice');
 var warframePlugin = require('plugins/warframe');
@@ -46,7 +47,7 @@ var messaging = new Messaging(client, {
 	twitter: settings.twitter
 });
 _.each([
-	debugPlugin, discordPlugin, funPlugin, twitterPlugin.link, warframePlugin, voicePlugin, aimlPlugin
+	debugPlugin, discordPlugin, funPlugin, helpPlugin, twitterPlugin.link, warframePlugin, voicePlugin, aimlPlugin
 ], function(plugin) {
 	messaging.addPlugin(plugin);
 });
