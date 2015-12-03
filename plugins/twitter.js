@@ -131,6 +131,12 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 			return stream;
 		});
 
+		messaging.addCommandHandler(/^!alertme:info/i, function(message) {
+			var broadcast = twitterBroadcasts.find({for: message.author.id});
+			client.sendMessage(message.author, 'Your current watch list: ' + broadcast.accept.split(' '));
+			return true;
+		});
+
 		messaging.addCommandHandler(/^!alertme:stop/i, function(message) {
 			logger.debug('Broadcasts before remove: ' + broadcasts.length);
 			var index = _.findIndex(broadcasts, function(broadcast) {
@@ -154,6 +160,7 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 				client.sendMessage(message.author,
 					'Give me a space-separated list of items you want to watch for.\n' +
 					'I recommend: `!alertme Reactor Catalyst Forma Nitain`.\n' +
+					'To see your current watch list, use `!alertme:info`\n' +
 					'To stop receiving notifications, use `!alertme:stop`');
 			} else {
 				var pattern = watchList.join('|');
