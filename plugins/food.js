@@ -32,13 +32,29 @@ module.exports = function(foodUrl) {
 	});
 
 	function getRandomFood() {
-		return foodUrl + '/pictures/' + randomFoods[Math.round(Math.random() * randomFoods.length)] + '.jpg';
+		var randomFood = foodUrl + '/pictures/' + randomFoods[Math.round(Math.random() * randomFoods.length)] + '/';
+		return request.getAsync(randomFood)
+		.then(function(response) {
+			var url = null;
+			var parser = new htmlparser.Parser({
+				onopentag: function(name, attribs) {
+					if(attribs.id === 'mainPhoto') {
+						url = attribs.src;
+					}
+				},
+			});
+			parser.write(response.body);
+			parser.end();
+			return url;
+		});
 	}
 
 	return function(messaging, client) {
 		messaging.addCommandHandler(/^!food/i, function(message) {
 			if(randomFoods) {
-				client.sendMessage(message.channel, getRandomFood());
+				getRandomFood().then(function(url) {
+					client.sendMessage(message.channel, url);
+				});
 			}
 			return true;
 		});
