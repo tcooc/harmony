@@ -1,5 +1,6 @@
 var _ = require('underscore');
-var request = require('request');
+var Promise = require('bluebird');
+var request = Promise.promisifyAll(require('request'));
 
 var bot = require('lib/bot');
 
@@ -32,8 +33,8 @@ module.exports = function(messaging, client) {
 			url += _.map(content.slice(1), function(n) {
 				return n[0].toUpperCase() + n.substring(1);
 			}).join('_');
-			request.head(url, function(error, response) {
-				if(error || response.statusCode !== 200) {
+			request.headAsync(url).then(function(response) {
+				if(response.statusCode !== 200) {
 					return;
 				}
 				client.sendMessage(message.channel, url);
