@@ -8,6 +8,7 @@ var commands = [
 	'!trialstats', 'Get links to trial stats',
 	'!alertme', 'Personalized alert notifications. Type `!alertme` to see instructions',
 	'!invite', 'PM me `!invite <Discord invite url>` to invite me to your server',
+	'!food', 'Stare at random images of food',
 	'!flip', 'Flip your table',
 	'!unflip', 'Unflip a table',
 	'soon', '(coming soon)'
