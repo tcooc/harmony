@@ -62,6 +62,20 @@ module.exports = function(messaging, client) {
 		return true;
 	});
 
+	messaging.addCommandHandler(/^!prefix/i, function(message, content) {
+		if(message.author.id !== messaging.settings.owner) {
+			return;
+		}
+		if(content.length === 1) {
+			client.sendMessage(message.channel, 'Prefix for this server is ' + messaging.getPrefix(message));			
+		} else {
+			var prefix = content[1];
+			messaging.setPrefix(message, prefix);
+			client.sendMessage(message.channel, 'Prefix for this server set to ' + prefix);
+		}
+		return true;
+	});
+
 	messaging.addCommandHandler(/^!loglevel/i, function(message, content) {
 		if(message.author.id !== messaging.settings.owner) {
 			return;

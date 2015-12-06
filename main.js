@@ -44,7 +44,7 @@ client.on('ready', function() {
 var messaging = new Messaging(client, {
 	owner: settings.owner,
 	prefix: db('prefix'),
-	defaultPrefix: {prefix: '!'},
+	defaultPrefix: {prefix: '@<me>'},
 	twitter: settings.twitter
 });
 _.each([
