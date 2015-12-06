@@ -63,7 +63,7 @@ module.exports = function(messaging, client) {
 	});
 
 	messaging.addCommandHandler(/^!prefix/i, function(message, content) {
-		if(message.author.id !== messaging.settings.owner) {
+		if(message.author.id !== messaging.settings.owner && !messaging.isOwner(message.author, message.channel.server)) {
 			return;
 		}
 		if(content.length === 1) {
@@ -74,7 +74,7 @@ module.exports = function(messaging, client) {
 				prefix = '';
 			}
 			messaging.setPrefix(message, prefix);
-			client.sendMessage(message.channel, 'Prefix for this server set to ' + prefix);
+			client.sendMessage(message.channel, 'Prefix for this server set to \'' + prefix + '\'');
 		}
 		return true;
 	});
