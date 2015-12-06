@@ -67,7 +67,7 @@ module.exports = function(messaging, client) {
 			return;
 		}
 		if(content.length === 1) {
-			client.sendMessage(message.channel, 'Prefix for this server is ' + messaging.getPrefix(message));
+			client.sendMessage(message.channel, 'Prefix for this server is \'' + messaging.getPrefix(message) + '\'');
 		} else {
 			var prefix = content[1];
 			if(prefix === '<none>') {
