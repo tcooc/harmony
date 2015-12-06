@@ -26,6 +26,20 @@ module.exports = function(messaging, client) {
 		return true;
 	});
 
+	messaging.addCommandHandler(/^!sorties?/i, function(message) {
+		bot.helpers.simpleGET('http://wf.tcooc.net/sortie').then(function(body) {
+			client.sendMessage(message.channel, body);
+		});
+		return true;
+	});
+
+	messaging.addCommandHandler(/^!invasions?/i, function(message) {
+		bot.helpers.simpleGET('http://wf.tcooc.net/invasion').then(function(body) {
+			client.sendMessage(message.channel, body);
+		});
+		return true;
+	});
+
 	messaging.addCommandHandler(/^!wiki/i, function(message, content) {
 		if(content.length > 1) {
 			// check if page exists, kinda

@@ -4,6 +4,8 @@ var commands = [
 	'!trader', 'Void trader info',
 	'!scans', 'Scan target info',
 	'!deals', 'Darvo deals',
+	'!invasion', 'List invasions and rewards',
+	'!sortie', 'Sortie info'
 	'!wiki', 'Get wiki link for the specified topic. For example, `!wiki excalibur`',
 	'!trialstats', 'Get links to trial stats',
 	'!alertme', 'Personalized alert notifications. Type `!alertme` to see instructions',
