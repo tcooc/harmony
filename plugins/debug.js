@@ -52,6 +52,19 @@ module.exports = function(messaging, client) {
 		return true;
 	});
 
+	messaging.addCommandHandler(/^!message/i, function(message, content) {
+		if(message.author.id !== messaging.settings.owner || content.length < 3) {
+			return;
+		}
+		var channel = client.channels.get('id', content[1]);
+		var text = content.slice(2).join(' ');
+		if(channel) {
+			logger.info('Sending ' + text + ' to ' + channel.id);
+			client.sendMessage(channel, text);
+		}
+		return true;
+	});
+
 	messaging.addCommandHandler(/^!stats/i, function(message) {
 		if(message.author.id !== messaging.settings.owner) {
 			return;
