@@ -37,7 +37,7 @@ module.exports = function(messaging, client) {
 				result = vm.runInNewContext(content.slice(1).join(' '), {}, {timeout: 1000, filename: 'run'});
 			} catch(e) {
 				logger.info(e.stack);
-				if(!(e instanceof SyntaxError)) {
+				if(!(e instanceof SyntaxError) && e.stack) {
 					var stack = e.stack.split('\n');
 					// if run in a new context, the stack only goes 4 levels deep
 					stack.splice(stack.length - 4);
