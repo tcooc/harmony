@@ -3,6 +3,7 @@ var htmlparser = require('htmlparser2');
 var logger = require('logger');
 var Promise = require('bluebird');
 var request = Promise.promisifyAll(require('request'));
+var URL = require('url');
 
 module.exports = function(foodUrl) {
 	var randomFoods = null;
@@ -49,11 +50,23 @@ module.exports = function(foodUrl) {
 		});
 	}
 
+	function getFoodImage(url) {
+		return request.getAsync(url).then(function(response) {
+			return response.body;
+		});
+	}
+
 	return function(messaging, client) {
 		messaging.addCommandHandler(/^!food/i, function(message) {
 			if(randomFoods) {
-				getRandomFood().then(function(url) {
-					client.sendMessage(message.channel, url);
+				var fileName;
+				getRandomFood()
+				.then(function(url) {
+					fileName = URL.parse(url).path.split('/').pop();
+					return getFoodImage(url);
+				})
+				.then(function(data) {
+					client.sendFile(message.channel, data, fileName);
 				});
 			}
 			return true;
