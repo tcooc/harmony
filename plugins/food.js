@@ -66,7 +66,7 @@ module.exports = function(foodUrl) {
 					return getFoodImage(url);
 				})
 				.then(function(data) {
-					client.sendFile(message.channel, new Buffer(data), fileName);
+					client.sendFile(message.channel, new Buffer(data, 'binary'), fileName);
 				});
 			}
 			return true;
