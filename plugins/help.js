@@ -10,11 +10,11 @@ var commands = [
 	'!trialstats', 'Get links to trial stats',
 	'!alertme', 'Personalized alert notifications. Type `!alertme` to see instructions',
 	'!invite', 'PM me `!invite <Discord invite url>` to invite me to your server',
-	'!prefix', 'Set the chat prefix for your server. Only works if you are the server owner.' +
-		'`!prefix @<me>` sets it that only mentions work, and !prefix <none> disables the prefix',
+	'!prefix', 'Set the required to activate me for your server. Only works if you are the owner.' +
+		'`!prefix @<me>` sets it to mentions, and `!prefix <none>` disables the prefix',
 	'!food', 'Stare at random images of food',
 	'!flip', 'Flip your table',
-	'!unflip', 'Unflip a table',
+	'!unflip', 'Unflip your table',
 	'soon', '(coming soon)'
 ];
 
