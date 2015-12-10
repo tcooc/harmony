@@ -40,7 +40,7 @@ module.exports = function(messaging, client) {
 				if(!(e instanceof SyntaxError) && e.stack) {
 					var stack = e.stack.split('\n');
 					// if run in a new context, the stack only goes 4 levels deep
-					stack.splice(stack.length - 4);
+					stack.splice(0, stack.length - 4);
 					result = stack.join('\n');
 				} else {
 					result = e.toString();
