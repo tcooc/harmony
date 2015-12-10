@@ -51,7 +51,7 @@ module.exports = function(foodUrl) {
 	}
 
 	function getFoodImage(url) {
-		return request.getAsync(url).then(function(response) {
+		return request.getAsync({url: url, encoding: null}).then(function(response) {
 			return response.body;
 		});
 	}
