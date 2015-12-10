@@ -36,13 +36,11 @@ module.exports = function(messaging, client) {
 			try {
 				result = vm.runInNewContext(content.slice(1).join(' '), {}, {timeout: 1000, filename: 'run'});
 			} catch(e) {
-				logger.info(e.stack);
+				result = e.toString();
 				if(!(e instanceof SyntaxError) && e.stack) {
 					var stack = e.stack.split('\n');
 					// if run in a new context, the stack only goes 4 levels deep
-					result = stack.slice(0, stack.length - 4).join('\n');
-				} else {
-					result = e.toString();
+					result = result + '\n' + stack.slice(0, stack.length - 4).join('\n');
 				}
 				result = '```'+ result + '```';
 			}
