@@ -1,3 +1,4 @@
+var Discord = require('discord.js');
 var db = require('db');
 var util = require('util');
 var vm = require('vm');
@@ -9,6 +10,13 @@ module.exports = function(messaging, client) {
 			message.channel.name + '(' + message.channel.id + ')',
 			message.content);
 		logger.debug(util.inspect(message, {depth: 1, colors: true}));
+	});
+
+	messaging.addHook(function(message) {
+		if(message.channel instanceof Discord.PMChannel) {
+			client.sendMessage(client.users.get('id', messaging.settings.owner),
+				'`' + message.content + '` from ' + message.author.username + '(' + message.author.id + ')');
+		}
 	});
 
 	messaging.addCommandHandler(/^!eval/i, function(message, content) {
