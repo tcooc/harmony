@@ -18,13 +18,8 @@ function getAIMLLoadOrder() {
 	});
 }
 
-try {
-	AIML_LOAD_ORDER = getAIMLLoadOrder();
-	logger.info('AIML load order ' + AIML_LOAD_ORDER);
-} catch(e) {
-	AIML_LOAD_ORDER = null;
-}
-
+AIML_LOAD_ORDER = getAIMLLoadOrder();
+logger.info('AIML load order ' + AIML_LOAD_ORDER);
 
 function aimlPlugin(messaging, client) {
 	var topics = fs.readdirAsync(AIML_DIR).then(function(files) {
@@ -52,7 +47,9 @@ function aimlPlugin(messaging, client) {
 	.then(function(results) {
 		var engine = new aiml.AiEngine('discord', results[0], {name: client.user.username});
 		messaging.addCommandHandler(/^!aiml/i, function(message, content) {
-			engine.replyAsync({name: message.author.username}, content.slice(1).join(' ')).then(function(response) {
+			var input = content.slice(1).join(' ');
+			logger.info('AI processing ' + input);
+			engine.replyAsync({name: message.author.username}, input).then(function(response) {
 				client.sendMessage(message.channel, response);
 			}, function(err) {
 				logger.error(err);
