@@ -9,13 +9,13 @@ var AIML_DIR = 'aiml';
 var AIML_LOAD_ORDER;
 
 function getAIMLLoadOrder() {
-	var loadOrder = fs.readFileSync(path.join(AIML_DIR, 'loadorder.txt').toString());
+	var loadOrder = fs.readFileSync(path.join(AIML_DIR, 'loadorder.txt')).toString();
 	return _(loadOrder.split('\n')).map(function(requirement) {
 		return requirement.trim();
 	})
 	.filter(function(requirement) {
 		return requirement.length > 0;
-	}).value();
+	});
 }
 
 try {
@@ -54,6 +54,8 @@ function aimlPlugin(messaging, client) {
 		messaging.addCommandHandler(/^!aiml/i, function(message, content) {
 			engine.replyAsync({name: message.author.username}, content.slice(1).join(' ')).then(function(response) {
 				client.sendMessage(message.channel, response);
+			}, function(err) {
+				logger.error(err);
 			});
 			return true;
 		});
