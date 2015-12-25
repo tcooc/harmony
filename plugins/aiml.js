@@ -19,7 +19,7 @@ function getAIMLLoadOrder() {
 }
 
 AIML_LOAD_ORDER = getAIMLLoadOrder();
-logger.info('AIML load order ' + AIML_LOAD_ORDER);
+logger.info('AIML load order: ' + AIML_LOAD_ORDER);
 
 function aimlPlugin(messaging, client) {
 	var topics = fs.readdirAsync(AIML_DIR).then(function(files) {
@@ -49,10 +49,12 @@ function aimlPlugin(messaging, client) {
 		messaging.addCommandHandler(/^!aiml/i, function(message, content) {
 			var input = content.slice(1).join(' ');
 			logger.info('AI processing ' + input);
-			engine.replyAsync({name: message.author.username}, input).then(function(response) {
+			engine.reply({name: message.author.username}, input, function(err, response) {
+				if(err) {
+					logger.error(err);
+					return;
+				}
 				client.sendMessage(message.channel, response);
-			}, function(err) {
-				logger.error(err);
 			});
 			return true;
 		});
