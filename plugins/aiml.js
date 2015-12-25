@@ -15,7 +15,7 @@ function getAIMLLoadOrder() {
 	})
 	.filter(function(requirement) {
 		return requirement.length > 0;
-	});
+	}).value();
 }
 
 try {
