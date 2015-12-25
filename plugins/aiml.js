@@ -6,7 +6,7 @@ var logger = require('logger');
 var path = require('path');
 
 var AIML_DIR = 'aiml';
-var AIML_LOAD_ORDER;
+var AIML_LOAD_ORDER = null;
 
 function getAIMLLoadOrder() {
 	var loadOrder = fs.readFileSync(path.join(AIML_DIR, 'loadorder.txt')).toString();
@@ -18,8 +18,10 @@ function getAIMLLoadOrder() {
 	});
 }
 
-AIML_LOAD_ORDER = getAIMLLoadOrder();
-logger.info('AIML load order: ' + AIML_LOAD_ORDER);
+try {
+	AIML_LOAD_ORDER = getAIMLLoadOrder();
+	logger.info('AIML load order: ' + AIML_LOAD_ORDER);
+} catch(e) {}
 
 function aimlPlugin(messaging, client) {
 	var topics = fs.readdirAsync(AIML_DIR).then(function(files) {
