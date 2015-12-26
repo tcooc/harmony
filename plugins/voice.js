@@ -33,7 +33,7 @@ module.exports = function(messaging, client) {
 		if(message.author.id !== messaging.settings.owner || content.length <= 1) {
 			return;
 		}
-		var name = content[1];
+		var name = content.slice(1).join(' ');
 		joinVoiceChannel(_.find(message.channel.server.channels, function(channel) {
 			return channel.type === 'voice' && channel.name === name;
 		}), message.channel);
@@ -55,15 +55,18 @@ module.exports = function(messaging, client) {
 			var youtubeUrl = 'https://www.youtube.com/watch?v=' + videoId;
 			var stream = ytdl(youtubeUrl, YTDL_OPTIONS);
 
-			stream.on('info', function(/*info, format*/) {
-				logger.info('stream info retrieved');
+			stream.on('info', function(info, format) {
+				logger.debug('stream info');
+				logger.debug(info);
+				logger.debug(format);
 			});
 
-			stream.on('response', function(/*response*/) {
-				logger.info('stream response done');
+			stream.on('response', function(response) {
+				logger.debug('stream response');
+				logger.debug(response);
 			});
 
-			client.voiceConnection.playRawStream(stream)
+			client.voiceConnection.playRawStream(stream, {volume: 0.5})
 			.then(function(intent) {
 				intent.once('time', function() {
 					client.sendMessage(message.channel, 'Playing...');
