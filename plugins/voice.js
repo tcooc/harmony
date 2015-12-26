@@ -46,6 +46,9 @@ module.exports = function(messaging, client) {
 	}
 
 	function playStream(output, stream, options) {
+		stream.on('error', function(e) {
+			logger.error(e);
+		});
 		return client.voiceConnection.playRawStream(stream, options)
 		.then(function(intent) {
 			intent.on('end', function() {
@@ -77,10 +80,6 @@ module.exports = function(messaging, client) {
 			stream.on('response', function(response) {
 				logger.debug('stream response');
 				logger.debug(response);
-			});
-
-			stream.on('error', function(e) {
-				logger.error(e);
 			});
 
 			currentlyPlaying = {
