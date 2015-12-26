@@ -148,7 +148,7 @@ module.exports = function(messaging, client) {
 		if(message.author.id !== messaging.settings.owner) {
 			return;
 		}
-		stopPlaying(messge.channel);
+		stopPlaying(message.channel);
 		return true;
 	});
 
