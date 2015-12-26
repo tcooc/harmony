@@ -148,12 +148,7 @@ module.exports = function(messaging, client) {
 		if(message.author.id !== messaging.settings.owner) {
 			return;
 		}
-		if(!client.voiceConnection) {
-			client.sendMessage(message.channel, 'Not playing anything');
-		} else {
-			client.voiceConnection.stopPlaying();
-			client.sendMessage(message.channel, 'Stopping');
-		}
+		stopPlaying(messge.channel);
 		return true;
 	});
 
