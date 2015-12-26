@@ -65,7 +65,7 @@ module.exports = function(messaging, client) {
 		}
 	}
 
-	playTwitch(output, url, options) {
+	function playTwitch(output, url, options) {
 		var process = child_process.spawn('livestreamer', [url, 'worst', '--stdout']);
 		var stream = process.stdout;
 		playStream(output, stream, options);
