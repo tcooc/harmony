@@ -28,9 +28,10 @@ function generateHelpMessage() {
 
 module.exports = function(messaging, client) {
 	messaging.addCommandHandler(/^!about?/i, function(message) {
-		client.sendMessage(message.author, 'I am a bot created by tcooc for Warframe related matters.\n' +
+		client.sendMessage(message.author,
+			'I am a bot created by `tcooc` for Warframe related matters.\n' +
 			'Type `!commands` to see what I can do.\n' +
-			'Feel free to PM my creator if you have any feedback.');
+			'My soul resides in https://github.com/tcooc/harmony. Feel free to PM my creator if you have any feedback.');
 		return true;
 	});
 
