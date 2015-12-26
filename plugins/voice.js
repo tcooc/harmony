@@ -79,6 +79,19 @@ module.exports = function(messaging, client) {
 		}
 	});
 
+	messaging.addCommandHandler(/^!voice:stop/i, function(message) {
+		if(message.author.id !== messaging.settings.owner) {
+			return;
+		}
+		if(!client.voiceConnection) {
+			client.sendMessage(message.channel, 'Not playing anything');
+		} else {
+			client.voiceConnection.stopPlaying();
+			client.sendMessage(message.channel, 'Stopping');
+		}
+		return true;
+	});
+
 	messaging.addCommandHandler(/^!voice:leave/i, function(message) {
 		if(message.author.id !== messaging.settings.owner) {
 			return;
