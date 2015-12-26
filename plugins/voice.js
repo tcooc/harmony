@@ -13,6 +13,8 @@ var YTDL_OPTIONS = {
 };
 
 module.exports = function(messaging, client) {
+	var currentlyPlaying = null;
+
 	function joinVoiceChannel(output, channel) {
 		if(channel) {
 			client.joinVoiceChannel(channel);
@@ -25,6 +27,19 @@ module.exports = function(messaging, client) {
 	function leaveVoiceChannel(output) {
 		client.leaveVoiceChannel();
 		client.sendMessage(output, 'Leaving voice channel');
+	}
+
+	function stopPlaying(output) {
+		if(!client.voiceConnection) {
+			client.sendMessage(output, 'Not playing anything');
+		} else {
+			client.voiceConnection.stopPlaying();
+			if(currentlyPlaying) {
+				currentlyPlaying.stop();
+				currentlyPlaying = null;
+			}
+			client.sendMessage(output, 'Stopping');
+		}
 	}
 
 	function playStream(output, stream, options) {
@@ -61,13 +76,28 @@ module.exports = function(messaging, client) {
 				logger.debug(response);
 			});
 
+			stream.on('error', function(e) {
+				logger.error(e);
+			});
+
+			currentlyPlaying = {
+				stop: function() {
+					stream.end();
+					stream.destroy();
+				}
+			};
 			playStream(output, stream, options);
 		}
 	}
 
 	function playTwitch(output, url, options) {
-		var process = child_process.spawn('livestreamer', [url, 'worst', '--stdout']);
+		var process = child_process.spawn('livestreamer', [url, 'worst', '--stdout'], {stdio: ['ignore', 'pipe', 'ignore']});
 		var stream = process.stdout;
+		currentlyPlaying = {
+			stop: function() {
+				process.kill('SIGINT');
+			}
+		};
 		playStream(output, stream, options);
 	}
 
