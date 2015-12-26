@@ -60,36 +60,31 @@ module.exports = function(messaging, client) {
 		});
 	}
 
-	function playYoutube(output, urlString, options) {
-		var url = URL.parse(urlString, true);
+	function playYoutube(output, url, options) {
 		var videoId = url.query ? url.query.v: null;
 
-		if(url.hostname !== 'www.youtube.com' || url.pathname !== '/watch') {
-			client.sendMessage(output, 'Your link is broked');
-		} else {
-			var youtubeUrl = 'https://www.youtube.com/watch?v=' + videoId;
-			var stream = ytdl(youtubeUrl, YTDL_OPTIONS);
+		var youtubeUrl = 'https://www.youtube.com/watch?v=' + videoId;
+		var stream = ytdl(youtubeUrl, YTDL_OPTIONS);
 
-			stream.on('info', function(info, format) {
-				logger.debug('stream info');
-				logger.debug(info);
-				logger.debug(format);
-				client.sendMessage(output, 'Playing **' + info.title + '**');
-			});
+		stream.on('info', function(info, format) {
+			logger.debug('stream info');
+			logger.debug(info);
+			logger.debug(format);
+			client.sendMessage(output, 'Playing **' + info.title + '**');
+		});
 
-			stream.on('response', function(response) {
-				logger.debug('stream response');
-				logger.debug(response);
-			});
+		stream.on('response', function(response) {
+			logger.debug('stream response');
+			logger.debug(response);
+		});
 
-			currentlyPlaying = {
-				stop: function() {
-					stream.end();
-					stream.destroy();
-				}
-			};
-			playStream(output, stream, options);
-		}
+		currentlyPlaying = {
+			stop: function() {
+				stream.end();
+				stream.destroy();
+			}
+		};
+		playStream(output, stream, options);
 	}
 
 	function playTwitch(output, url, options) {
@@ -101,6 +96,7 @@ module.exports = function(messaging, client) {
 			}
 		};
 		playStream(output, stream, options);
+		client.sendMessage(output, 'Playing stream ' + url);
 	}
 
 	messaging.addCommandHandler(/^!voice:joinid/i, function(message, content) {
@@ -128,20 +124,17 @@ module.exports = function(messaging, client) {
 		}
 		if(!client.voiceConnection) {
 			client.sendMessage(message.channel, 'Dude, I\'m not connected to a voice channel');
-		} else {
-			playYoutube(message.channel, content[1], {volume: 0.5});
+			return true;
 		}
-		return true;
-	});
 
-	messaging.addCommandHandler(/^!voice:stream/i, function(message, content) {
-		if(message.author.id !== messaging.settings.owner || content.length <= 1) {
-			return;
-		}
-		if(!client.voiceConnection) {
-			client.sendMessage(message.channel, 'Dude, I\'m not connected to a voice channel');
+		var urlString = content[1];
+		var url = URL.parse(urlString, true);
+		if(url.hostname === 'www.youtube.com' && url.pathname === '/watch') {
+			playYoutube(message.channel, url, {volume: 0.5});
+		} else if(url.hostname === 'www.twitch.tv') {
+			playTwitch(message.channel, urlString, {volume: 0.5});
 		} else {
-			playTwitch(message.channel, content[1], {volume: 0.5});
+			client.sendMessage(output, 'Your link is broked');
 		}
 		return true;
 	});
