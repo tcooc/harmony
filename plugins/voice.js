@@ -134,7 +134,7 @@ module.exports = function(messaging, client) {
 		} else if(url.hostname === 'www.twitch.tv') {
 			playTwitch(message.channel, urlString, {volume: 0.2});
 		} else {
-			client.sendMessage(output, 'Your link is broked');
+			client.sendMessage(message.channel, 'Your link is broked');
 		}
 		return true;
 	});
@@ -161,4 +161,3 @@ module.exports = function(messaging, client) {
 	});
 
 };
-
