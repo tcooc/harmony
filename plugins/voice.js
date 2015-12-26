@@ -1,4 +1,5 @@
 var _ = require('underscore');
+var child_process = require('child_process');
 var URL = require('url');
 var logger = require('logger');
 var ytdl = require('ytdl-core');
@@ -26,13 +27,23 @@ module.exports = function(messaging, client) {
 		client.sendMessage(output, 'Leaving voice channel');
 	}
 
-	function play(output, urlString, options) {
+	function playStream(output, stream, options) {
+		return client.voiceConnection.playRawStream(stream, options)
+		.then(function(intent) {
+			intent.on('end', function() {
+				client.sendMessage(output, 'Finished playing');
+			});
+			intent.on('error', function(e) {
+				logger.error(e);
+			});
+		});
+	}
+
+	function playYoutube(output, urlString, options) {
 		var url = URL.parse(urlString, true);
 		var videoId = url.query ? url.query.v: null;
 
-		if(!client.voiceConnection) {
-			client.sendMessage(output, 'Dude, I\'m not connected to a voice channel');
-		} else if(url.hostname !== 'www.youtube.com' || url.pathname !== '/watch') {
+		if(url.hostname !== 'www.youtube.com' || url.pathname !== '/watch') {
 			client.sendMessage(output, 'Your link is broked');
 		} else {
 			var youtubeUrl = 'https://www.youtube.com/watch?v=' + videoId;
@@ -50,16 +61,14 @@ module.exports = function(messaging, client) {
 				logger.debug(response);
 			});
 
-			client.voiceConnection.playRawStream(stream, options)
-			.then(function(intent) {
-				intent.on('end', function() {
-					client.sendMessage(output, 'Finished playing');
-				});
-				intent.on('error', function(e) {
-					logger.error(e);
-				});
-			});
+			playStream(output, stream, options);
 		}
+	}
+
+	playTwitch(output, url, options) {
+		var process = child_process.spawn('livestreamer', [url, 'worst', '--stdout']);
+		var stream = process.stdout;
+		playStream(output, stream, options);
 	}
 
 	messaging.addCommandHandler(/^!voice:joinid/i, function(message, content) {
@@ -85,7 +94,24 @@ module.exports = function(messaging, client) {
 		if(message.author.id !== messaging.settings.owner || content.length <= 1) {
 			return;
 		}
-		play(message.channel, content[1], {volume: 0.5});
+		if(!client.voiceConnection) {
+			client.sendMessage(message.channel, 'Dude, I\'m not connected to a voice channel');
+		} else {
+			playYoutube(message.channel, content[1], {volume: 0.5});
+		}
+		return true;
+	});
+
+	messaging.addCommandHandler(/^!voice:stream/i, function(message, content) {
+		if(message.author.id !== messaging.settings.owner || content.length <= 1) {
+			return;
+		}
+		if(!client.voiceConnection) {
+			client.sendMessage(message.channel, 'Dude, I\'m not connected to a voice channel');
+		} else {
+			playTwitch(message.channel, content[1], {volume: 0.5});
+		}
+		return true;
 	});
 
 	messaging.addCommandHandler(/^!voice:stop/i, function(message) {
