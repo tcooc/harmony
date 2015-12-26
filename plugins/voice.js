@@ -59,6 +59,7 @@ module.exports = function(messaging, client) {
 				logger.debug('stream info');
 				logger.debug(info);
 				logger.debug(format);
+				client.sendMessage(message.channel, 'Playing **' + info.title + '**');
 			});
 
 			stream.on('response', function(response) {
@@ -68,14 +69,6 @@ module.exports = function(messaging, client) {
 
 			client.voiceConnection.playRawStream(stream, {volume: 0.5})
 			.then(function(intent) {
-				intent.once('time', function() {
-					client.sendMessage(message.channel, 'Playing...');
-				});
-				intent.on('time', function(t) {
-					if(t % 1000 === 0) {
-						logger.info('playing ' + t);
-					}
-				});
 				intent.on('end', function() {
 					client.sendMessage(message.channel, 'Finished playing');
 				});
