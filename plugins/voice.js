@@ -130,9 +130,9 @@ module.exports = function(messaging, client) {
 		var urlString = content[1];
 		var url = URL.parse(urlString, true);
 		if(url.hostname === 'www.youtube.com' && url.pathname === '/watch') {
-			playYoutube(message.channel, url, {volume: 0.5});
+			playYoutube(message.channel, url, {volume: 0.2});
 		} else if(url.hostname === 'www.twitch.tv') {
-			playTwitch(message.channel, urlString, {volume: 0.5});
+			playTwitch(message.channel, urlString, {volume: 0.2});
 		} else {
 			client.sendMessage(output, 'Your link is broked');
 		}
