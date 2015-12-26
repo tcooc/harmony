@@ -24,22 +24,25 @@ module.exports = function(messaging, client) {
 		}
 	}
 
-	function leaveVoiceChannel(output) {
-		client.leaveVoiceChannel();
-		client.sendMessage(output, 'Leaving voice channel');
-	}
-
 	function stopPlaying(output) {
-		if(!client.voiceConnection) {
-			client.sendMessage(output, 'Not playing anything');
-		} else {
+		if(client.voiceConnection) {
+			if(client.voiceConnection.instream) {
+				client.voiceConnection.instream.on('error', function(e) {
+					logger.error(e);
+				});
+			}
 			client.voiceConnection.stopPlaying();
 			if(currentlyPlaying) {
 				currentlyPlaying.stop();
 				currentlyPlaying = null;
 			}
-			client.sendMessage(output, 'Stopping');
 		}
+	}
+
+	function leaveVoiceChannel(output) {
+		stopPlaying(output);
+		client.leaveVoiceChannel();
+		client.sendMessage(output, 'Leaving voice channel');
 	}
 
 	function playStream(output, stream, options) {
@@ -148,7 +151,12 @@ module.exports = function(messaging, client) {
 		if(message.author.id !== messaging.settings.owner) {
 			return;
 		}
-		stopPlaying(message.channel);
+		if(!client.voiceConnection) {
+			client.sendMessage(message.channel, 'Not playing anything');
+		} else {
+			stopPlaying(message.channel);
+			client.sendMessage(message.channel, 'Stopping');
+		}
 		return true;
 	});
 
