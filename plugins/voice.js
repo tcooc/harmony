@@ -71,8 +71,8 @@ module.exports = function(messaging, client) {
 
 		currentlyPlaying = {
 			stop: function() {
-				stream.end();
-				stream.destroy();
+				stream.end && stream.end();
+				stream.destroy && stream.destroy();
 			}
 		};
 		playStream(output, stream, options);
