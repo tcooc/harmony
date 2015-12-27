@@ -1,4 +1,3 @@
-var _ = require('underscore');
 var child_process = require('child_process');
 var URL = require('url');
 var logger = require('logger');
@@ -15,7 +14,7 @@ var YTDL_OPTIONS = {
 module.exports = function(messaging, client) {
 	var currentlyPlaying = null;
 
-	function stopPlaying(output) {
+	function stopPlaying() {
 		if(client.voiceConnection) {
 			if(client.voiceConnection.instream) {
 				client.voiceConnection.instream.on('error', function(e) {
@@ -31,7 +30,7 @@ module.exports = function(messaging, client) {
 	}
 
 	function leaveVoiceChannel(output) {
-		stopPlaying(output);
+		stopPlaying();
 		client.leaveVoiceChannel();
 		client.sendMessage(output, 'Leaving voice channel');
 	}
@@ -126,7 +125,7 @@ module.exports = function(messaging, client) {
 		if(!client.voiceConnection) {
 			client.sendMessage(message.channel, 'Not playing anything');
 		} else {
-			stopPlaying(message.channel);
+			stopPlaying();
 			client.sendMessage(message.channel, 'Stopping');
 		}
 		return true;
