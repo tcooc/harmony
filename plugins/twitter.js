@@ -75,11 +75,11 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 				client.deleteMessage(message);
 			} else {
 				var newContent = message.content.replace(ALERT_TWEET_REGEX, '- ' + Math.round(expiresIn)  + 'm -');
-				if(newContent !== message.content) {
-					client.updateMessage(message, newContent);
-				}
-				logger.silly('Twitter: scheduling tick ', message.content, content);
-				setTimeout(doUpdateAlertMessage.bind(null, message, timestamp, content), 10 * SECOND);
+				var promise = newContent !== message.content ? client.updateMessage(message, newContent) : Promise.resolve();
+				promise.then(function(message) {
+					logger.silly('Twitter: scheduling tick ', message.content, content);
+					setTimeout(doUpdateAlertMessage.bind(null, message, timestamp, content), 10 * SECOND);
+				});
 			}
 		}
 
