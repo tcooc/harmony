@@ -75,7 +75,7 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 				client.deleteMessage(message);
 			} else {
 				var newContent = message.content.replace(ALERT_TWEET_REGEX, '- ' + Math.round(expiresIn)  + 'm -');
-				var promise = newContent !== message.content ? client.updateMessage(message, newContent) : Promise.resolve();
+				var promise = newContent !== message.content ? client.updateMessage(message, newContent) : Promise.resolve(message);
 				promise.then(function(message) {
 					logger.silly('Twitter: scheduling tick ', message.content, content);
 					setTimeout(doUpdateAlertMessage.bind(null, message, timestamp, content), 10 * SECOND);
