@@ -15,15 +15,6 @@ var YTDL_OPTIONS = {
 module.exports = function(messaging, client) {
 	var currentlyPlaying = null;
 
-	function joinVoiceChannel(output, channel) {
-		if(channel) {
-			client.joinVoiceChannel(channel);
-			client.sendMessage(output, 'Joining ' + channel);
-		} else {
-			client.sendMessage(output, 'Channel not found');
-		}
-	}
-
 	function stopPlaying(output) {
 		if(client.voiceConnection) {
 			if(client.voiceConnection.instream) {
@@ -103,7 +94,7 @@ module.exports = function(messaging, client) {
 		if(message.author.id !== messaging.settings.owner || content.length <= 1) {
 			return;
 		}
-		joinVoiceChannel(message.author.voiceChannel);
+		client.joinVoiceChannel(message.author.voiceChannel);
 		if(!client.voiceConnection) {
 			client.sendMessage(message.channel, 'Dude, I\'m not connected to a voice channel');
 			return true;
