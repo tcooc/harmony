@@ -94,21 +94,28 @@ module.exports = function(messaging, client) {
 		if(message.author.id !== messaging.settings.owner || content.length <= 1) {
 			return;
 		}
-		client.joinVoiceChannel(message.author.voiceChannel);
-		if(!client.voiceConnection) {
-			client.sendMessage(message.channel, 'Dude, I\'m not connected to a voice channel');
-			return true;
-		}
 
-		var urlString = content[1];
-		var url = URL.parse(urlString, true);
-		if(url.hostname === 'www.youtube.com' && url.pathname === '/watch') {
-			playYoutube(message.channel, url, {volume: 0.2});
-		} else if(url.hostname === 'www.twitch.tv') {
-			playTwitch(message.channel, urlString, {volume: 0.2});
+		var promise;
+		if(!client.voiceConnection) {
+			if(!message.author.voiceChannel) {
+				client.sendMessage(message.channel, 'Dude, I\'m not connected to a voice channel');
+				return true;
+			}
+			promise = client.joinVoiceChannel(message.author.voiceChannel);
 		} else {
-			client.sendMessage(message.channel, 'Your link is broked');
+			promise = Promise.resolve();
 		}
+		promise.then(function() {
+			var urlString = content[1];
+			var url = URL.parse(urlString, true);
+			if(url.hostname === 'www.youtube.com' && url.pathname === '/watch') {
+				playYoutube(message.channel, url, {volume: 0.2});
+			} else if(url.hostname === 'www.twitch.tv') {
+				playTwitch(message.channel, urlString, {volume: 0.2});
+			} else {
+				client.sendMessage(message.channel, 'Your link is broked');
+			}
+		});
 		return true;
 	});
 
