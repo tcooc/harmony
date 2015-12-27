@@ -99,29 +99,11 @@ module.exports = function(messaging, client) {
 		client.sendMessage(output, 'Playing stream ' + url);
 	}
 
-	messaging.addCommandHandler(/^!voice:joinid/i, function(message, content) {
-		if(message.author.id !== messaging.settings.owner || content.length <= 1) {
-			return;
-		}
-		joinVoiceChannel(message.channel, client.channels.get('id', content[1]));
-		return true;
-	});
-
-	messaging.addCommandHandler(/^!voice:join/i, function(message, content) {
-		if(message.author.id !== messaging.settings.owner || content.length <= 1) {
-			return;
-		}
-		var name = content.slice(1).join(' ');
-		joinVoiceChannel(message.channel, _.find(message.channel.server.channels, function(channel) {
-			return channel.type === 'voice' && channel.name === name;
-		}));
-		return true;
-	});
-
 	messaging.addCommandHandler(/^!voice:play/i, function(message, content) {
 		if(message.author.id !== messaging.settings.owner || content.length <= 1) {
 			return;
 		}
+		joinVoiceChannel(message.author.voiceChannel);
 		if(!client.voiceConnection) {
 			client.sendMessage(message.channel, 'Dude, I\'m not connected to a voice channel');
 			return true;
