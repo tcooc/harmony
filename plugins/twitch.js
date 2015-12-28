@@ -49,6 +49,7 @@ module.exports = function(messaging, client) {
 
 	function update() {
 		return getStreams().then(function(streams) {
+			logger.debug('streams', streams);
 			var streamsMap = {};
 			_.each(streams, function(stream) {
 				streamsMap[stream.channel.name] = stream;
