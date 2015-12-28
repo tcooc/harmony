@@ -14,6 +14,7 @@ var discordPlugin = require('plugins/discord');
 var foodPlugin = require('plugins/food')(settings.foodUrl);
 var funPlugin = require('plugins/fun');
 var helpPlugin = require('plugins/help');
+var twitchPlugin = require('plugins/twitch');
 var twitterPlugin = require('plugins/twitter')(settings.twitterFollow, db('twitterBroadcasts'));
 var voicePlugin = require('plugins/voice');
 var warframePlugin = require('plugins/warframe');
@@ -45,10 +46,11 @@ var messaging = new Messaging(client, {
 	owner: settings.owner,
 	prefix: db('prefix'),
 	defaultPrefix: {prefix: ''},
-	twitter: settings.twitter
+	twitter: settings.twitter,
+	twitch: db('twitch')
 });
 _.each([
-	debugPlugin, discordPlugin, foodPlugin, funPlugin, helpPlugin,
+	debugPlugin, discordPlugin, foodPlugin, funPlugin, helpPlugin, twitchPlugin
 	twitterPlugin.link, warframePlugin, voicePlugin, aimlPlugin
 ], function(plugin) {
 	messaging.addPlugin(plugin);

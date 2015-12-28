@@ -106,6 +106,9 @@ module.exports = function(messaging, client) {
 		}
 		promise.then(function() {
 			var urlString = content[1];
+			if(urlString.startsWith('www')) {
+				urlString = 'http://' + urlString;
+			}
 			var url = URL.parse(urlString, true);
 			if(url.hostname === 'www.youtube.com' && url.pathname === '/watch') {
 				playYoutube(message.channel, url, {volume: 0.2});
