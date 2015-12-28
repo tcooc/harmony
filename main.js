@@ -50,7 +50,7 @@ var messaging = new Messaging(client, {
 	twitch: db('twitch')
 });
 _.each([
-	debugPlugin, discordPlugin, foodPlugin, funPlugin, helpPlugin, twitchPlugin
+	debugPlugin, discordPlugin, foodPlugin, funPlugin, helpPlugin, twitchPlugin,
 	twitterPlugin.link, warframePlugin, voicePlugin, aimlPlugin
 ], function(plugin) {
 	messaging.addPlugin(plugin);
