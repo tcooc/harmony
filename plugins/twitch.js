@@ -1,6 +1,7 @@
 var _ = require('underscore');
 var events = require('events');
 var logger = require('logger');
+var Promise = require('bluebird');
 var request = Promise.promisifyAll(require('request'));
 
 var STREAMS_URL = 'https://api.twitch.tv/kraken/streams?channel=';
