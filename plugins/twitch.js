@@ -35,7 +35,7 @@ module.exports = function(messaging, client) {
 			var watchers = channelWatchers[name];
 			_.each(watchers, function(watcher) {
 				var channel = client.channels.get('id', watcher);
-				client.sendMessage(channel, '**' + name + '** is now streaming ' + stream.game);
+				client.sendMessage(channel, '**' + stream.channel.display_name + '** is now streaming ' + stream.game);
 			});
 		}
 	});
