@@ -67,7 +67,7 @@ module.exports = function(messaging, client) {
 
 	function updateLoop() {
 		update().then(function() {
-			setTimeout(updateLoop, 60 * 1000);
+			setTimeout(updateLoop, 30 * 1000);
 		});
 	}
 
