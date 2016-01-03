@@ -42,7 +42,7 @@ module.exports = function(messaging, client) {
 		return client.voiceConnection.playRawStream(stream, options)
 		.then(function(intent) {
 			intent.on('end', function() {
-				client.sendMessage(output, 'Finished playing');
+				stopPlaying();
 			});
 			intent.on('error', function(e) {
 				logger.error(e);
@@ -70,6 +70,7 @@ module.exports = function(messaging, client) {
 
 		currentlyPlaying = {
 			stop: function() {
+				client.sendMessage(output, 'Finished playing');
 				stream.end && stream.end();
 				stream.destroy && stream.destroy();
 			}
@@ -82,6 +83,7 @@ module.exports = function(messaging, client) {
 		var stream = process.stdout;
 		currentlyPlaying = {
 			stop: function() {
+				client.sendMessage(output, 'Stream stopped');
 				process.kill('SIGINT');
 			}
 		};
