@@ -3,6 +3,18 @@ var AudioManager = require('lib/audio').AudioManager;
 module.exports = function(messaging, client) {
 	var audioManager = new AudioManager(client);
 
+	audioManager.eventBus.on('playing', function(spec, info) {
+		if(info) {
+			client.sendMessage(spec.output, 'Playing **' + info.title + '**');
+		} else {
+			client.sendMessage(spec.output, 'Playing **' + spec.url + '**');
+		}
+	});
+
+	audioManager.eventBus.on('stopping', function(spec) {
+		client.sendMessage(spec.output, 'Finished playing ' + stream.type);
+	});
+
 	messaging.addCommandHandler(/^!audio:play/i, function(message, content) {
 		if(message.author.id !== messaging.settings.owner || content.length <= 1) {
 			return;
@@ -23,7 +35,12 @@ module.exports = function(messaging, client) {
 			if(urlString.startsWith('www')) {
 				urlString = 'http://' + urlString;
 			}
-			audioManager.play(message.channel, urlString, {volume: 0.2});
+			var success = audioManager.play(message.channel, urlString, {volume: 0.2});
+			if(success && audioManager.queue.length > 0) {
+				client.sendMessage(message.channel, 'Added to queue');
+			} else if (!success) {
+				client.sendMessage(message.channel, 'Your link is broken');
+			}
 		});
 		return true;
 	});
