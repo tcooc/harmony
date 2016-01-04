@@ -45,12 +45,11 @@ module.exports = function(messaging, client) {
 		return true;
 	});
 
-	messaging.addCommandHandler(/^!audio:stop/i, function(message) {
+	messaging.addCommandHandler(/^!audio:skip/i, function(message) {
 		if(!client.voiceConnection) {
 			client.sendMessage(message.channel, 'Not playing anything');
 		} else {
 			audioManager.stop();
-			client.sendMessage(message.channel, 'Stopping');
 		}
 		return true;
 	});
@@ -67,7 +66,7 @@ module.exports = function(messaging, client) {
 			return;
 		}
 		audioManager.queue.pop();
-		client.sendMessage(messaging.channel, 'VETOED');
+		client.sendMessage(message.channel, 'VETOED');
 		return true;
 	});
 };
