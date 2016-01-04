@@ -16,47 +16,36 @@ module.exports = function(messaging, client) {
 	});
 
 	messaging.addCommandHandler(/^!audio:play/i, function(message, content) {
-		if(message.author.id !== messaging.settings.owner || content.length <= 1) {
-			return;
-		}
-
-		var promise;
-		if(!client.voiceConnection) {
-			if(!message.author.voiceChannel) {
-				client.sendMessage(message.channel, 'Dude, I\'m not connected to a voice channel');
-				return true;
-			}
-			promise = client.joinVoiceChannel(message.author.voiceChannel);
+		if(content.length <= 1) {
+			audioManager.start();
 		} else {
-			promise = Promise.resolve();
-		}
-		promise.then(function() {
-			var urlString = content[1];
-			if(urlString.startsWith('www')) {
-				urlString = 'http://' + urlString;
+			var promise;
+			if(!client.voiceConnection) {
+				if(!message.author.voiceChannel) {
+					client.sendMessage(message.channel, 'Dude, I\'m not connected to a voice channel');
+					return true;
+				}
+				promise = client.joinVoiceChannel(message.author.voiceChannel);
+			} else {
+				promise = Promise.resolve();
 			}
-			var success = audioManager.play(message.channel, urlString, {volume: 0.2});
-			if(success && audioManager.queue.length > 0) {
-				client.sendMessage(message.channel, 'Added to queue');
-			} else if (!success) {
-				client.sendMessage(message.channel, 'Your link is broken');
-			}
-		});
-		return true;
-	});
-
-	messaging.addCommandHandler(/^!audio:start/i, function(message) {
-		if(message.author.id !== messaging.settings.owner) {
-			return;
+			promise.then(function() {
+				var urlString = content[1];
+				if(urlString.startsWith('www')) {
+					urlString = 'http://' + urlString;
+				}
+				var success = audioManager.play(message.channel, urlString, {volume: 0.2});
+				if(success && audioManager.queue.length > 0) {
+					client.sendMessage(message.channel, 'Added to queue');
+				} else if (!success) {
+					client.sendMessage(message.channel, 'Your link is broken');
+				}
+			});
 		}
-		audioManager.start();
 		return true;
 	});
 
 	messaging.addCommandHandler(/^!audio:stop/i, function(message) {
-		if(message.author.id !== messaging.settings.owner) {
-			return;
-		}
 		if(!client.voiceConnection) {
 			client.sendMessage(message.channel, 'Not playing anything');
 		} else {
@@ -67,9 +56,6 @@ module.exports = function(messaging, client) {
 	});
 
 	messaging.addCommandHandler(/^!audio:leave/i, function(message) {
-		if(message.author.id !== messaging.settings.owner) {
-			return;
-		}
 		audioManager.stop();
 		client.leaveVoiceChannel();
 		client.sendMessage(messaging.channel, 'Leaving voice channel');
