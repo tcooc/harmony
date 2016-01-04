@@ -62,4 +62,12 @@ module.exports = function(messaging, client) {
 		return true;
 	});
 
+	messaging.addCommandHandler(/^!veto/i, function(message) {
+		if(message.author.id !== messaging.settings.owner) {
+			return;
+		}
+		audioManager.queue.pop();
+		client.sendMessage(messaging.channel, 'VETOED');
+		return true;
+	});
 };
