@@ -12,7 +12,7 @@ module.exports = function(messaging, client) {
 	});
 
 	audioManager.eventBus.on('stopping', function(spec) {
-		client.sendMessage(spec.output, 'Finished playing ' + stream.type);
+		client.sendMessage(spec.output, 'Finished playing ' + spec.type);
 	});
 
 	messaging.addCommandHandler(/^!audio:play/i, function(message, content) {
