@@ -1,7 +1,7 @@
 var AudioManager = require('lib/audio').AudioManager;
 
 module.exports = function(messaging, client) {
-	var audioManager = new AudioManager(client);
+	var audioManager = new AudioManager(messaging);
 
 	audioManager.eventBus.on('playing', function(spec, info) {
 		if(info) {

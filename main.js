@@ -47,7 +47,8 @@ var messaging = new Messaging(client, {
 	prefix: db('prefix'),
 	defaultPrefix: {prefix: ''},
 	twitter: settings.twitter,
-	twitch: db('twitch')
+	twitch: db('twitch'),
+	google: settings.google
 });
 _.each([
 	debugPlugin, discordPlugin, foodPlugin, funPlugin, helpPlugin, twitchPlugin,
