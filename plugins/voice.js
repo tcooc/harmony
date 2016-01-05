@@ -61,6 +61,13 @@ module.exports = function(messaging, client) {
 		return true;
 	});
 
+	messaging.addCommandHandler(/^!audio:clear/i, function(message) {
+		audioManager.clear();
+		audioManager.stop();
+		client.sendMessage(message.channel, 'Cleared queue');
+		return true;
+	});
+
 	messaging.addCommandHandler(/^!audio:leave/i, function(message) {
 		audioManager.stop();
 		client.leaveVoiceChannel();
