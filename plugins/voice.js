@@ -1,7 +1,7 @@
-var AudioManager = require('lib/audio').AudioManager;
+var audio = require('lib/audio');
 
 module.exports = function(messaging, client) {
-	var audioManager = new AudioManager(messaging);
+	var audioManager = new audio.AudioManager(messaging);
 
 	audioManager.eventBus.on('playing', function(spec, info) {
 		if(info) {
@@ -34,11 +34,18 @@ module.exports = function(messaging, client) {
 				if(urlString.startsWith('www')) {
 					urlString = 'http://' + urlString;
 				}
-				var success = audioManager.play(message.channel, urlString, {volume: 0.2});
-				if(success && audioManager.queue.length > 0) {
-					client.sendMessage(message.channel, 'Added to queue');
-				} else if (!success) {
+				return audioManager.play(message.channel, urlString, {volume: 0.2});
+			}).then(function(status) {
+				if(status === audio.PlayStatus.Invalid) {
 					client.sendMessage(message.channel, 'Your link is broken');
+					return;
+				}
+				if(status === audio.PlayStatus.Playlist) {
+					client.sendMessage(message.channel, 'Playlist added');
+					return;
+				}
+				if(status && audioManager.queue.length > 0) {
+					client.sendMessage(message.channel, 'Added to queue');
 				}
 			});
 		}
@@ -58,15 +65,6 @@ module.exports = function(messaging, client) {
 		audioManager.stop();
 		client.leaveVoiceChannel();
 		client.sendMessage(messaging.channel, 'Leaving voice channel');
-		return true;
-	});
-
-	messaging.addCommandHandler(/^!veto/i, function(message) {
-		if(message.author.id !== messaging.settings.owner) {
-			return;
-		}
-		audioManager.queue.pop();
-		client.sendMessage(message.channel, 'VETOED');
 		return true;
 	});
 };
