@@ -1,3 +1,4 @@
+var child_process = require('child_process');
 var Discord = require('discord.js');
 var db = require('db');
 var util = require('util');
@@ -77,6 +78,17 @@ module.exports = function(messaging, client) {
 		var servers = client.servers.length;
 		var users = client.users.length;
 		client.sendMessage(message.channel, 'Connected to ' + servers + ' servers with a total of ' + users + ' users.');
+		return true;
+	});
+
+	messaging.addCommandHandler(/^!reload/i, function(message) {
+		if(message.author.id !== messaging.settings.owner) {
+			return;
+		}
+		logger.info('Triggering reload');
+		child_process.exec('git pull', function() {
+			process.kill(process.pid, 'SIGINT');
+		});
 		return true;
 	});
 
