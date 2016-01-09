@@ -64,7 +64,7 @@ module.exports = function(messaging, client) {
 		}
 		var to = client.channels.get('id', content[1]);
 		var text = content.slice(2).join(' ');
-		if(channel) {
+		if(to) {
 			logger.info('Sending ' + text + ' to ' + to.id);
 			client.sendMessage(to, text);
 		}
