@@ -58,15 +58,28 @@ module.exports = function(messaging, client) {
 		return true;
 	});
 
-	messaging.addCommandHandler(/^!message/i, function(message, content) {
+	messaging.addCommandHandler(/^!message:channel/i, function(message, content) {
 		if(message.author.id !== messaging.settings.owner || content.length < 3) {
 			return;
 		}
-		var channel = client.channels.get('id', content[1]);
+		var to = client.channels.get('id', content[1]);
 		var text = content.slice(2).join(' ');
 		if(channel) {
-			logger.info('Sending ' + text + ' to ' + channel.id);
-			client.sendMessage(channel, text);
+			logger.info('Sending ' + text + ' to ' + to.id);
+			client.sendMessage(to, text);
+		}
+		return true;
+	});
+
+	messaging.addCommandHandler(/^!message:user/i, function(message, content) {
+		if(message.author.id !== messaging.settings.owner || content.length < 3) {
+			return;
+		}
+		var to = client.users.get('id', content[1]);
+		var text = content.slice(2).join(' ');
+		if(to) {
+			logger.info('Sending ' + text + ' to ' + to.id);
+			client.sendMessage(to, text);
 		}
 		return true;
 	});
