@@ -9,6 +9,7 @@ var Messaging = require('lib/Messaging');
 var settings = db('settings').first();
 
 var aimlPlugin = require('plugins/aiml');
+var d3Plugin = require('plugins/d3');
 var debugPlugin = require('plugins/debug');
 var discordPlugin = require('plugins/discord');
 var foodPlugin = require('plugins/food')(settings.foodUrl);
@@ -51,7 +52,7 @@ var messaging = new Messaging(client, {
 	google: settings.google
 });
 _.each([
-	debugPlugin, discordPlugin, foodPlugin, funPlugin, helpPlugin, twitchPlugin,
+	d3Plugin, debugPlugin, discordPlugin, foodPlugin, funPlugin, helpPlugin, twitchPlugin,
 	twitterPlugin.link, warframePlugin, voicePlugin, aimlPlugin
 ], function(plugin) {
 	messaging.addPlugin(plugin);
