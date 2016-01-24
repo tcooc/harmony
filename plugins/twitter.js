@@ -119,6 +119,7 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 
 		twitter.createStream(plugin.client, twitterFollow).then(function(stream) {
 			plugin.stream = stream;
+			logger.info('Twitter stream created.');
 			return stream;
 		})
 		.then(function(stream) {
