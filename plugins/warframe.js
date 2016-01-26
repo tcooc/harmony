@@ -88,8 +88,14 @@ module.exports = function(messaging, client) {
 				enemyData[name] = data;
 			}
 		}
-		setInterval(function() {
-			bot.helpers.simpleGET('http://wf.tcooc.net/enemy').then(processEnemyData);
-		}, 10 * 1000);
+		bot.helpers.simpleGET('http://wf.tcooc.net/enemy').then(function(body) {
+			processEnemyData(body, false);
+		}).then(function() {
+			setInterval(function() {
+				bot.helpers.simpleGET('http://wf.tcooc.net/enemy').then(function(body) {
+					processEnemyData(body, true);
+				});
+			}, 10 * 1000);
+		});
 	});
 };
