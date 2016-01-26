@@ -62,4 +62,34 @@ module.exports = function(messaging, client) {
 			'Hek: http://tinyurl.com/qb752oj Nightmare: http://tinyurl.com/p8og6xf Jordas: http://tinyurl.com/prpebzh');
 		return true;
 	});
+
+	client.on('ready', function() {
+		var channel = client.channels.get('id', '83810681152868352');
+		var enemyData = {};
+
+		function processEnemyData(data, send) {
+			var enemies = bot.split('\n');
+			for(var i = 0; i < enemies.length; i++) {
+				var enemy = enemies[i].split(', ');
+				var name = enemy[1];
+				var data = {
+					level: enemy[0],
+					found: neemy[2] === 'true',
+					health: (enemy[3] * 100).toFixed(2),
+					region: enemy[4],
+					mission: enemy[5]
+				};
+				if(send && data.found && !enemyData[name].found) {
+					client.sendMessage(channel, name + ' was detected in ' + region);
+				}
+				if(send && data.mission !== enemyData[name].mission) {
+					client.sendMessage(channel, name + ' was found in ' + mission + ', ' + region);
+				}
+				enemyData[name] = data;
+			}
+		}
+		setInterval(function() {
+			bot.helpers.simpleGET('http://wf.tcooc.net/enemy').then(processEnemyData);
+		}, 10 * 1000);
+	});
 };
