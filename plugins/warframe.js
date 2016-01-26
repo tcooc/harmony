@@ -78,15 +78,18 @@ module.exports = function(messaging, client) {
 					region: enemy[4],
 					mission: enemy[5]
 				};
+
+				var channel = client.channels.get('id', '83810681152868352');
 				if(send && data.found && !enemyData[name].found) {
-					client.sendMessage(client.channels.get('id', '83810681152868352'), name + ' was detected in ' + data.region);
+					client.sendMessage(channel, name + ' was detected in ' + data.region);
 				}
 				if(send && data.mission !== enemyData[name].mission) {
-					client.sendMessage(client.channels.get('id', '83810681152868352'), name + ' was found in ' + data.mission + ', ' + data.region);
+					client.sendMessage(channel, name + ' was found in ' + data.mission + ', ' + data.region);
 				}
 				if(send && !data.found && enemyData[name].found) {
-					client.sendMessage(client.channels.get('id', '83810681152868352'), name + ' went back into hiding');
+					client.sendMessage(channel, name + ' went back into hiding');
 				}
+
 				enemyData[name] = data;
 			}
 		}
