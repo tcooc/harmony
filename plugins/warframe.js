@@ -79,10 +79,10 @@ module.exports = function(messaging, client) {
 					mission: enemy[5]
 				};
 				if(send && data.found && !enemyData[name].found) {
-					client.sendMessage(client.channels.get('id', '83810681152868352'), name + ' was detected in ' + region);
+					client.sendMessage(client.channels.get('id', '83810681152868352'), name + ' was detected in ' + data.region);
 				}
 				if(send && data.mission !== enemyData[name].mission) {
-					client.sendMessage(client.channels.get('id', '83810681152868352'), name + ' was found in ' + mission + ', ' + region);
+					client.sendMessage(client.channels.get('id', '83810681152868352'), name + ' was found in ' + data.mission + ', ' + data.region);
 				}
 				if(send && !data.found && enemyData[name].found) {
 					client.sendMessage(client.channels.get('id', '83810681152868352'), name + ' went back into hiding');
