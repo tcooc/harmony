@@ -92,7 +92,6 @@ module.exports = function(messaging, client) {
 		logger.debug('Checking enemies list');
 		bot.helpers.simpleGET('http://wf.tcooc.net/enemy').then(function(body) {
 			processEnemyData(body, false);
-		}).then(function() {
 			logger.debug('Starting enemy locator');
 			setInterval(function() {
 				bot.helpers.simpleGET('http://wf.tcooc.net/enemy').then(function(body) {
