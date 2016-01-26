@@ -69,13 +69,13 @@ module.exports = function(messaging, client) {
 		var enemyData = {};
 
 		function processEnemyData(data, send) {
-			var enemies = bot.split('\n');
+			var enemies = data.split('\n');
 			for(var i = 0; i < enemies.length; i++) {
 				var enemy = enemies[i].split(', ');
 				var name = enemy[1];
 				var data = {
 					level: enemy[0],
-					found: neemy[2] === 'true',
+					found: enemy[2] === 'true',
 					health: (enemy[3] * 100).toFixed(2),
 					region: enemy[4],
 					mission: enemy[5]
@@ -92,6 +92,7 @@ module.exports = function(messaging, client) {
 		logger.debug('Checking enemies list');
 		bot.helpers.simpleGET('http://wf.tcooc.net/enemy').then(function(body) {
 			processEnemyData(body, false);
+		}).then(function() {
 			logger.debug('Starting enemy locator');
 			setInterval(function() {
 				bot.helpers.simpleGET('http://wf.tcooc.net/enemy').then(function(body) {
