@@ -80,11 +80,10 @@ module.exports = function(messaging, client) {
 				};
 
 				var channel = client.channels.get('id', '83810681152868352');
-				if(send && data.found && !enemyData[name].found) {
-					client.sendMessage(channel, name + ' was detected in ' + data.region);
-				}
 				if(send && data.mission !== enemyData[name].mission) {
 					client.sendMessage(channel, name + ' was found in ' + data.mission + ', ' + data.region);
+				} else if(send && data.found && !enemyData[name].found) {
+					client.sendMessage(channel, name + ' was detected in ' + data.region);
 				}
 				if(send && !data.found && enemyData[name].found) {
 					client.sendMessage(channel, name + ' went back into hiding');
