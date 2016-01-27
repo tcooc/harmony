@@ -44,6 +44,9 @@ module.exports = function(messaging, client) {
 		return request.getAsync(STREAMS_URL + channels.join(','))
 		.then(function(response) {
 			return JSON.parse(response.body).streams;
+		})
+		.catch(function(error) {
+			logger.error('getStreams error', error);
 		});
 	}
 

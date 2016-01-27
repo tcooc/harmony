@@ -1,3 +1,4 @@
+var _ = require('underscore');
 var child_process = require('child_process');
 var Discord = require('discord.js');
 var db = require('db');
@@ -134,6 +135,22 @@ module.exports = function(messaging, client) {
 		} else {
 			client.sendMessage(message.channel, 'Invalid log level');
 		}
+		return true;
+	});
+
+
+	messaging.addCommandHandler(/^!clear/i, function(message, content) {
+		client.getChannelLogs(message.channel, 500)
+		.then(function(messages) {
+			return _.filter(messages, function(message) {
+				return message.author.id === client.user.id;
+			});
+		})
+		.then(function(messages) {
+			_.each(messages, function(message) {
+				client.deleteMessage(message);
+			});
+		});
 		return true;
 	});
 
