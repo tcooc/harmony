@@ -1,8 +1,6 @@
 var _ = require('underscore');
-var Twitter = require('twitter');
+var Twit = require('twit');
 var logger = require('logger');
-
-var twitter = require('lib/twitter');
 
 var ALERT_TWEET_REGEX = /- ([0-9]+)m -/;
 var SECOND = 1000;
@@ -15,7 +13,7 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 	};
 
 	plugin.link = function(messaging, client) {
-		plugin.client = new Twitter(messaging.settings.twitter);
+		plugin.client = new Twit(messaging.settings.twitter);
 
 		var broadcasts = [];
 
@@ -117,20 +115,13 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 			logger.info('Twitter broadcasting ' + broadcasts.length + ' stream(s).');
 		});
 
-		twitter.createStream(plugin.client, twitterFollow).then(function(stream) {
-			plugin.stream = stream;
-			logger.info('Twitter stream created.');
-			return stream;
-		})
-		.then(function(stream) {
-			stream.on('data', handleTweet);
-			stream.on('error', function(error) {
-				logger.error('Twitter error: ' + error.source);
-				throw error;
-			});
-
-			return stream;
+		plugin.stream = plugin.client.stream('statuses/filter', {follow: twitterFollow});
+		plugin.stream.on('tweet', handleTweet);
+		plugin.stream.on('error', function(error) {
+			logger.error('Twitter error: ' + error.source);
+			throw error;
 		});
+		logger.info('Twitter stream created.');
 
 		messaging.addCommandHandler(/^!alertme:info/i, function(message) {
 			var broadcast = twitterBroadcasts.find({for: message.author.id});
