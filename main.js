@@ -63,7 +63,7 @@ client.login(settings.email, settings.password);
 function shutdown() {
 	logger.info('Shutting down');
 	if(twitterPlugin.stream) {
-		twitterPlugin.stream.destroy();
+		twitterPlugin.stream.stop();
 	}
 	client.logout().then(function() {
 		process.exit(0);
