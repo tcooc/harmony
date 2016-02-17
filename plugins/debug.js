@@ -144,7 +144,7 @@ module.exports = function(messaging, client) {
 			return;
 		}
 		var type = content[1];
-		var promise = client.getChannelLogs(message.channel, 500);
+		var promise = client.getChannelLogs(message.channel, 100);
 		if(type !== 'all') {
 			promise = promise.then(function(messages) {
 				return _.filter(messages, function(message) {
@@ -153,13 +153,10 @@ module.exports = function(messaging, client) {
 			});
 		}
 		promise = promise.then(function(messages) {
-			console.log(messages.length);
 			_.each(messages, function(message) {
 				promise = promise.then(function(response) {
-					console.log(response);
+					if(response) logger.error(response);
 					return client.deleteMessage(message);
-				}, function(error) {
-					console.log(error);
 				});
 			});
 		});
