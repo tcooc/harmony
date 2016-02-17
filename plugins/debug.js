@@ -153,6 +153,7 @@ module.exports = function(messaging, client) {
 			});
 		}
 		promise = promise.then(function(messages) {
+			console.log(messages.length);
 			_.each(messages, function(message) {
 				promise = promise.then(function(response) {
 					console.log(response);
