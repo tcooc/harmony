@@ -140,13 +140,19 @@ module.exports = function(messaging, client) {
 
 
 	messaging.addCommandHandler(/^!clear/i, function(message, content) {
-		client.getChannelLogs(message.channel, 500)
-		.then(function(messages) {
-			return _.filter(messages, function(message) {
-				return message.author.id === client.user.id;
-			});
-		})
-		.then(function(messages) {
+		if(message.author.id !== messaging.settings.owner && !messaging.isOwner(message.author, message.channel.server)) {
+			return;
+		}
+		var type = content[1];
+		var promise = client.getChannelLogs(message.channel, 500);
+		if(type !== 'all') {
+			promise = promise.then(function(messages) {
+				return _.filter(messages, function(message) {
+					return message.author.id === client.user.id;
+				});
+			})
+		}
+		promise = promise.then(function(messages) {
 			_.each(messages, function(message) {
 				client.deleteMessage(message);
 			});
