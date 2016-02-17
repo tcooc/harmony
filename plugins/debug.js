@@ -150,11 +150,16 @@ module.exports = function(messaging, client) {
 				return _.filter(messages, function(message) {
 					return message.author.id === client.user.id;
 				});
-			})
+			});
 		}
 		promise = promise.then(function(messages) {
 			_.each(messages, function(message) {
-				client.deleteMessage(message);
+				promise = promise.then(function(response) {
+					console.log(response);
+					return client.deleteMessage(message);
+				}, function(error) {
+					console.log(error);
+				});
 			});
 		});
 		return true;
