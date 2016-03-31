@@ -5,6 +5,7 @@ var Promise = require('bluebird');
 var request = Promise.promisifyAll(require('request'));
 
 var STREAMS_URL = 'https://api.twitch.tv/kraken/streams?channel=';
+var THRESHOLD = 3;
 
 module.exports = function(messaging, client) {
 	var specs = messaging.settings.twitch.value();
@@ -16,22 +17,29 @@ module.exports = function(messaging, client) {
 			channelWatchers[spec.stream] = [];
 		}
 		channelWatchers[spec.stream].push(spec.broadcast);
-		channelsStatus[spec.stream] = null;
+		channelsStatus[spec.stream] = 0;
 	});
 	var channels = Object.keys(channelWatchers);
 
 	var eventBus = new events.EventEmitter();
 
 	eventBus.on('update', function(name, stream) {
-		var status = !!stream;
-		if(channelsStatus[name] !== null && channelsStatus[name] !== status) {
-			eventBus.emit('statusChanged', name, stream, status);
+		var streaming = !!stream;
+		if(streaming) {
+			channelsStatus[name] = channelsStatus[name] ? channelsStatus[name] + 1 : 1;
+			if(channelsStatus[name] === THRESHOLD) {
+				eventBus.emit('statusChanged', name, stream, streaming);
+			}
+		} else {
+			if(channelsStatus[name] >= THRESHOLD) {
+				eventBus.emit('statusChanged', name, stream, streaming);
+			}
+			channelsStatus[name] = 0;
 		}
-		channelsStatus[name] = status;
 	});
 
-	eventBus.on('statusChanged', function(name, stream, status) {
-		if(status) {
+	eventBus.on('statusChanged', function(name, stream, streaming) {
+		if(streaming) {
 			var watchers = channelWatchers[name];
 			_.each(watchers, function(watcher) {
 				var channel = client.channels.get('id', watcher);
