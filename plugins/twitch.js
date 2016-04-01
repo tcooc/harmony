@@ -26,7 +26,7 @@ module.exports = function(messaging, client) {
 	eventBus.on('update', function(name, stream) {
 		var streaming = !!stream;
 		if(streaming) {
-			if(channelsStatus[name] !== null && channelsStatus[name] !== stream.created_at) {
+			if(channelsStatus[name] && channelsStatus[name] !== stream.created_at) {
 				eventBus.emit('statusChanged', name, stream, streaming);
 			}
 			channelsStatus[name] = stream.created_at;
