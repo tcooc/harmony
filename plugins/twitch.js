@@ -26,15 +26,10 @@ module.exports = function(messaging, client) {
 	eventBus.on('update', function(name, stream) {
 		var streaming = !!stream;
 		if(streaming) {
-			channelsStatus[name] = channelsStatus[name] ? channelsStatus[name] + 1 : 1;
-			if(channelsStatus[name] === THRESHOLD) {
+			if(channelsStatus[name] !== null && channelsStatus[name] !== stream.created_at) {
 				eventBus.emit('statusChanged', name, stream, streaming);
 			}
-		} else {
-			if(channelsStatus[name] >= THRESHOLD) {
-				eventBus.emit('statusChanged', name, stream, streaming);
-			}
-			channelsStatus[name] = 0;
+			channelsStatus[name] = stream.created_at;
 		}
 	});
 
