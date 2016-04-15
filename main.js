@@ -44,12 +44,14 @@ client.on('ready', function() {
 });
 
 var messaging = new Messaging(client, {
+	db: db,
 	owner: settings.owner,
 	prefix: db('prefix'),
 	defaultPrefix: {prefix: ''},
 	twitter: settings.twitter,
 	twitch: db('twitch'),
-	google: settings.google
+	google: settings.google,
+	emotes: db('emotes')
 });
 _.each([
 	d3Plugin, debugPlugin, discordPlugin, foodPlugin, funPlugin, helpPlugin, twitchPlugin,
