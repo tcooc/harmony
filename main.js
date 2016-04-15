@@ -51,7 +51,7 @@ var messaging = new Messaging(client, {
 	twitter: settings.twitter,
 	twitch: db('twitch'),
 	google: settings.google,
-	emotes: db('emotes')
+	emotes: db('emotes').value()
 });
 _.each([
 	d3Plugin, debugPlugin, discordPlugin, foodPlugin, funPlugin, helpPlugin, twitchPlugin,
