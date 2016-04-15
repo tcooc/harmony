@@ -8,7 +8,7 @@ module.exports = function(messaging, client) {
 		var match = /<:[^:]+:\d+>/.exec(message.content);
 		if(match && !emotes[match[0]]) {
 			emotes[match[0]] = 1;
-			messaging.settings.db.write();
+			messaging.settings.db.save();
 			logger.info('Matched ' + match[0]);
 		}
 	});
