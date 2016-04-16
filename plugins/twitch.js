@@ -11,13 +11,17 @@ module.exports = function(messaging, client) {
 	var specs = messaging.settings.twitch.value();
 
 	var channelWatchers = {};
+	// channel status values: false, true, timestamp
+	// if false, means that status hasn't been initiated
+	// if true, means that status has been initiated, and stream was offline
+	// if timestamp, means that status has been initiated, and stream was online
 	var channelsStatus = {};
 	_.each(specs, function(spec) {
 		if(!channelWatchers[spec.stream]) {
 			channelWatchers[spec.stream] = [];
 		}
 		channelWatchers[spec.stream].push(spec.broadcast);
-		channelsStatus[spec.stream] = 0;
+		channelsStatus[spec.stream] = false;
 	});
 	var channels = Object.keys(channelWatchers);
 
@@ -30,6 +34,8 @@ module.exports = function(messaging, client) {
 				eventBus.emit('statusChanged', name, stream, streaming);
 			}
 			channelsStatus[name] = stream.created_at;
+		} else {
+			channelsStatus[name] = channelsStatus[name] || true;
 		}
 	});
 
@@ -38,6 +44,7 @@ module.exports = function(messaging, client) {
 			var watchers = channelWatchers[name];
 			_.each(watchers, function(watcher) {
 				var channel = client.channels.get('id', watcher);
+				logger.info('Stream started: ' + stream.channel.display_name + ' ' + stream.game);
 				client.sendMessage(channel, '**' + stream.channel.display_name + '** is now streaming ' + stream.game);
 			});
 		}
