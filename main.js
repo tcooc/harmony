@@ -55,7 +55,7 @@ var messaging = new Messaging(client, {
 });
 _.each([
 	d3Plugin, debugPlugin, discordPlugin, foodPlugin, funPlugin, helpPlugin, twitchPlugin,
-	twitterPlugin, warframePlugin, voicePlugin
+	twitterPlugin.link, warframePlugin, voicePlugin
 ], function(plugin) {
 	messaging.addPlugin(plugin);
 });
