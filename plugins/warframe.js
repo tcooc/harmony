@@ -1,7 +1,6 @@
 var _ = require('underscore');
 var Promise = require('bluebird');
 var request = Promise.promisifyAll(require('request'));
-var logger = require('logger');
 
 var bot = require('lib/bot');
 

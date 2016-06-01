@@ -5,7 +5,6 @@ var Promise = require('bluebird');
 var request = Promise.promisifyAll(require('request'));
 
 var STREAMS_URL = 'https://api.twitch.tv/kraken/streams?channel=';
-var THRESHOLD = 3;
 
 module.exports = function(messaging, client) {
 	var specs = messaging.settings.twitch.value();

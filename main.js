@@ -8,7 +8,7 @@ var Messaging = require('lib/Messaging');
 
 var settings = db('settings').first();
 
-var aimlPlugin = require('plugins/aiml');
+var alertsPlugin = require('plugins/alerts');
 var d3Plugin = require('plugins/d3');
 var debugPlugin = require('plugins/debug');
 var discordPlugin = require('plugins/discord');
@@ -16,7 +16,6 @@ var foodPlugin = require('plugins/food')(settings.foodUrl);
 var funPlugin = require('plugins/fun');
 var helpPlugin = require('plugins/help');
 var twitchPlugin = require('plugins/twitch');
-var twitterPlugin = require('plugins/twitter')(settings.twitterFollow, db('twitterBroadcasts'));
 var voicePlugin = require('plugins/voice');
 var warframePlugin = require('plugins/warframe');
 
@@ -48,14 +47,14 @@ var messaging = new Messaging(client, {
 	owner: settings.owner,
 	prefix: db('prefix'),
 	defaultPrefix: {prefix: ''},
-	twitter: settings.twitter,
+	alertBroadcasts: db('twitterBroadcasts'),
 	twitch: db('twitch'),
 	google: settings.google,
-	emotes: db('emotes').value()
+	emotes: db('emotes').value(),
 });
 _.each([
-	d3Plugin, debugPlugin, discordPlugin, foodPlugin, funPlugin, helpPlugin, twitchPlugin,
-	twitterPlugin.link, warframePlugin, voicePlugin, aimlPlugin
+	alertsPlugin, d3Plugin, debugPlugin, discordPlugin, foodPlugin, funPlugin, helpPlugin, twitchPlugin,
+	warframePlugin, voicePlugin
 ], function(plugin) {
 	messaging.addPlugin(plugin);
 });
@@ -63,13 +62,9 @@ _.each([
 client.login(settings.email, settings.password);
 
 function shutdown() {
+	var exit = process.exit.bind(process, 0);
 	logger.info('Shutting down');
-	if(twitterPlugin.stream) {
-		twitterPlugin.stream.stop();
-	}
-	client.logout().then(function() {
-		process.exit(0);
-	});
+	client.logout().then(exit, exit);
 }
 
 process.on('SIGINT', shutdown);
