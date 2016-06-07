@@ -126,7 +126,7 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 		messaging.addCommandHandler(/^!alertme:info/i, function(message) {
 			var broadcast = twitterBroadcasts.find({for: message.author.id});
 			if(broadcast) {
-				client.sendMessage(message.author, 'Your current watch list: `' + broadcast.accept.split(' ') + '`');
+				client.sendMessage(message.author, 'Your current watch list: `' + broadcast.accept.split('|').join(' ') + '`');
 			}
 			return true;
 		});
@@ -173,7 +173,7 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 				}
 				parseBroadcastSpec(twitterBroadcast);
 				logger.debug('Broadcasts after add: ' + broadcasts.length);
-				client.sendMessage(message.author, 'Watching for `' + pattern + '`');
+				client.sendMessage(message.author, 'Watching for `' + pattern.split('|').join(' ') + '`');
 			}
 			return true;
 		});
