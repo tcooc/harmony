@@ -20,7 +20,7 @@ module.exports = function(messaging, client) {
 	messaging.addCommandHandler(/^!ready/i, function(message) {
 		request.getAsync({url: 'http://tinyurl.com/BodyisReady123', encoding: null})
 		.then(function(response) {
-			client.sendFile(message.channel, new Buffer(response.body, 'binary'), fileName);
+			client.sendFile(message.channel, new Buffer(response.body, 'binary'), 'ready.gif');
 		});
 		return true;
 	});
