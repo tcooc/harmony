@@ -3,6 +3,7 @@ var Discord = require('discord.js');
 var commands = [
 	'!commands', 'Shows this message',
 	'!about', 'About me',
+	'!feedback', 'Send me feedback.',
 	'!trader', 'Void trader info',
 	'!scans', 'Scan target info',
 	'!deals', 'Darvo deals',
@@ -23,7 +24,7 @@ var commands = [
 var aboutMessage = 'Hi, I\'m Harmony.' +
 	'I am a bot created by `tcooc` for Warframe related matters.\n' +
 	'Type `!commands` to see what I can do.\n' +
-	'Source code is in https://github.com/tcooc/harmony. Feel free to PM my creator if you have any feedback.';
+	'Source code is at https://github.com/tcooc/harmony. Feel free to `!feedback` to send me feedback.';
 
 function generateHelpMessage() {
 	var message = [];
@@ -46,6 +47,13 @@ module.exports = function(messaging, client) {
 
 	messaging.addCommandHandler(/^!help/i, function(message) {
 		client.sendMessage(message.author, generateHelpMessage());
+		return true;
+	});
+
+	messaging.addCommandHandler(/^!feedback/i, function(message) {
+		client.sendMessage(client.users.get('id', messaging.settings.owner),
+			'Feedback: `' + message.content + '` from ' + message.author.username + '(' + message.author.id + ')');
+		client.sendMessage(message.author, 'Thank you!');
 		return true;
 	});
 
