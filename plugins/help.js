@@ -21,7 +21,7 @@ var commands = [
 	'soon', '(coming soon)'
 ];
 
-var aboutMessage = 'Hi, I\'m Harmony.' +
+var aboutMessage = 'Hi, I\'m Harmony.\n' +
 	'I am a bot created by `tcooc` for Warframe related matters.\n' +
 	'Type `!commands` to see what I can do.\n' +
 	'Source code is at https://github.com/tcooc/harmony. Feel free to `!feedback` to send me feedback.';

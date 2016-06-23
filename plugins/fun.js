@@ -1,3 +1,6 @@
+var Promise = require('bluebird');
+var request = Promise.promisifyAll(require('request'));
+
 module.exports = function(messaging, client) {
 	messaging.addCommandHandler(/^soon/i, function(message) {
 		client.sendMessage(message.channel, 'Soon' + String.fromCharCode(8482));
@@ -15,7 +18,10 @@ module.exports = function(messaging, client) {
 	});
 
 	messaging.addCommandHandler(/^!ready/i, function(message) {
-		client.sendMessage(message.channel, 'http://tinyurl.com/BodyisReady123');
+		request.getAsync({url: 'http://tinyurl.com/BodyisReady123', encoding: null})
+		.then(function(response) {
+			client.sendFile(message.channel, new Buffer(response.body, 'binary'), fileName);
+		});
 		return true;
 	});
 };
