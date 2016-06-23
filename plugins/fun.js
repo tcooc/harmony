@@ -17,10 +17,19 @@ module.exports = function(messaging, client) {
 		return true;
 	});
 
+	var readyData;
 	messaging.addCommandHandler(/^!ready/i, function(message) {
-		request.getAsync({url: 'http://tinyurl.com/BodyisReady123', encoding: null})
-		.then(function(response) {
-			client.sendFile(message.channel, new Buffer(response.body, 'binary'), 'ready.gif');
+		var promise;
+		if(!readyData) {
+			promise = request.getAsync({url: 'http://tinyurl.com/BodyisReady123', encoding: null})
+			.then(function(response) {
+				readyData = response.body;
+			});
+		} else {
+			promise = Promise.resolve();
+		}
+		promise.then(function() {
+			client.sendFile(message.channel, new Buffer(readyData, 'binary'), 'ready.gif');				
 		});
 		return true;
 	});
