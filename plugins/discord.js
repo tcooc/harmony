@@ -6,8 +6,9 @@ module.exports = function(messaging, client) {
 	var emotes = messaging.settings.emotes;
 	messaging.addHook(function(message) {
 		var regex = /<:[^:]+:\d+>/g;
+		var match;
 		do {
-			var match = regex.exec(message.content);
+			match = regex.exec(message.content);
 			if(match && !emotes[match[0]]) {
 				emotes[match[0]] = 1;
 				logger.info('Matched ' + match[0]);

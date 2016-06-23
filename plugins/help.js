@@ -1,3 +1,5 @@
+var Discord = require('discord.js');
+
 var commands = [
 	'!commands', 'Shows this message',
 	'!about', 'About me',
@@ -29,14 +31,26 @@ function generateHelpMessage() {
 module.exports = function(messaging, client) {
 	messaging.addCommandHandler(/^!about?/i, function(message) {
 		client.sendMessage(message.author,
+			'Hi, I\'m Harmony.' +
 			'I am a bot created by `tcooc` for Warframe related matters.\n' +
 			'Type `!commands` to see what I can do.\n' +
-			'My soul resides in https://github.com/tcooc/harmony. Feel free to PM my creator if you have any feedback.');
+			'Source code is in https://github.com/tcooc/harmony. Feel free to PM my creator if you have any feedback.');
 		return true;
 	});
 
 	messaging.addCommandHandler(/^!commands?/i, function(message) {
 		client.sendMessage(message.author, generateHelpMessage());
 		return true;
+	});
+
+	messaging.addCommandHandler(/^!help/i, function(message) {
+		client.sendMessage(message.author, generateHelpMessage());
+		return true;
+	});
+
+	messaging.addPostHook(function(message, handled) {
+		if(!handled && message.channel instanceof Discord.PMChannel) {
+			client.sendMessage(message.author, generateHelpMessage());
+		}
 	});
 };
