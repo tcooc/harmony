@@ -8,10 +8,14 @@ var logger = require('logger');
 
 module.exports = function(messaging, client) {
 	messaging.addHook(function(message) {
+		var content = message.content;
+		if(message.attachments && message.attachments[0]) {
+			content += '(' + message.attachments[0].url + ')';
+		}
 		logger.info(message.author.username + '(' + message.author.id + ')',
 			message.channel.name + '(' + message.channel.id + ')',
-			message.content);
-		logger.silly(util.inspect(message, {depth: 2, colors: true}));
+			content);
+		logger.silly(util.inspect(message, {depth: 1, colors: true}));
 	});
 
 	messaging.addHook(function(message) {
