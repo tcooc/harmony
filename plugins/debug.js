@@ -11,7 +11,7 @@ module.exports = function(messaging, client) {
 		logger.info(message.author.username + '(' + message.author.id + ')',
 			message.channel.name + '(' + message.channel.id + ')',
 			message.content);
-		logger.silly(util.inspect(message, {depth: 1, colors: true}));
+		logger.silly(util.inspect(message, {depth: 2, colors: true}));
 	});
 
 	messaging.addHook(function(message) {
