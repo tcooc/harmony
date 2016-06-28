@@ -34,7 +34,7 @@ module.exports = function(messaging, client) {
 				if(urlString.startsWith('www')) {
 					urlString = 'http://' + urlString;
 				}
-				return audioManager.play(message.channel, urlString, {volume: 0.2});
+				return audioManager.play(message.channel, urlString, {volume: 1});
 			}).then(function(status) {
 				if(status === audio.PlayStatus.Invalid) {
 					client.sendMessage(message.channel, 'Your link is broken');

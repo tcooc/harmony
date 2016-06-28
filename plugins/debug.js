@@ -10,7 +10,7 @@ module.exports = function(messaging, client) {
 	messaging.addHook(function(message) {
 		var content = message.content;
 		if(message.attachments && message.attachments[0]) {
-			content += '(' + message.attachments[0].url + ')';
+			content += ' (' + message.attachments[0].url + ')';
 		}
 		logger.info(message.author.username + '(' + message.author.id + ')',
 			message.channel.name + '(' + message.channel.id + ')',
