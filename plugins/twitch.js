@@ -44,7 +44,7 @@ module.exports = function(messaging, client) {
 			_.each(watchers, function(watcher) {
 				var channel = client.channels.get('id', watcher);
 				logger.info('Stream started: ' + stream.channel.display_name + ' ' + stream.game);
-				client.sendMessage(channel, '**' + stream.channel.display_name + '** is now streaming ' + stream.game);
+				client.sendMessage(channel, '**' + stream.channel.display_name + '** is now streaming ' + (stream.game ? stream.game : ''));
 			});
 		}
 	});
