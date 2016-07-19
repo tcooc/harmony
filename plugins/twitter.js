@@ -93,7 +93,8 @@ function createTwitterPlugin(twitterFollow, twitterBroadcasts) {
 			if(tweet.user.id_str === twitterFollow && !tweet.retweeted_status) {
 				logger.info('Tweet broadcasting: ' + tweet.text);
 				_.each(broadcasts, function(broadcast) {
-					if(broadcast.accept.test(tweet.text)) {
+					var filteredText =  tweet.text.replace(' Informant ', ''); // pending regex fix
+					if(broadcast.accept.test(filteredText)) {
 						logger.debug('Tweet accepted by ' + broadcast.accept);
 						messaging.broadcast(broadcast.channels, tweet.text)
 						.then(function(results) {
