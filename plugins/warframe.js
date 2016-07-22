@@ -42,7 +42,7 @@ module.exports = function(messaging, client) {
 
 	messaging.addCommandHandler(/^!sheev?/i, function(message, content) {
 		var qs = encodeURIComponent(content.join(' '));
-		bot.helpers.simpleGET('http://wf.tcooc.net/invasion?q=' + qs).then(function(body) {
+		bot.helpers.simpleGET('http://wf.tcooc.net/sheev/strats?q=' + qs).then(function(body) {
 			client.sendMessage(message.channel, body);
 		});
 		return true;
