@@ -41,7 +41,7 @@ module.exports = function(messaging, client) {
 	});
 
 	messaging.addCommandHandler(/^!sheev?/i, function(message, content) {
-		var qs = encodeURIComponent(content.join(' '));
+		var qs = encodeURIComponent(content.slice(1).join(' '));
 		bot.helpers.simpleGET('http://wf.tcooc.net/sheev/strats?q=' + qs).then(function(body) {
 			client.sendMessage(message.channel, body);
 		});
