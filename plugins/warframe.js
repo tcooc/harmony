@@ -40,6 +40,14 @@ module.exports = function(messaging, client) {
 		return true;
 	});
 
+	messaging.addCommandHandler(/^!sheev?/i, function(message, content) {
+		var qs = encodeURIComponent(content.join(' '));
+		bot.helpers.simpleGET('http://wf.tcooc.net/invasion?q=' + qs).then(function(body) {
+			client.sendMessage(message.channel, body);
+		});
+		return true;
+	});
+
 	messaging.addCommandHandler(/^!wiki/i, function(message, content) {
 		if(content.length > 1) {
 			// check if page exists, kinda
