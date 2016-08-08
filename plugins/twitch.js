@@ -7,22 +7,16 @@ var request = Promise.promisifyAll(require('request'));
 var STREAMS_URL = 'https://api.twitch.tv/kraken/streams?channel=';
 
 module.exports = function(messaging, client) {
+	// each spec has stream and broadcast
 	var specs = messaging.settings.twitch.value();
 
-	var channelWatchers = {};
+	// map of stream->broadcast specs
+	var channelWatchers;
 	// channel status values: false, true, timestamp
 	// if false, means that status hasn't been initiated
 	// if true, means that status has been initiated, and stream was offline
 	// if timestamp, means that status has been initiated, and stream was online
 	var channelsStatus = {};
-	_.each(specs, function(spec) {
-		if(!channelWatchers[spec.stream]) {
-			channelWatchers[spec.stream] = [];
-		}
-		channelWatchers[spec.stream].push(spec.broadcast);
-		channelsStatus[spec.stream] = false;
-	});
-	var channels = Object.keys(channelWatchers);
 
 	var eventBus = new events.EventEmitter();
 
@@ -50,8 +44,19 @@ module.exports = function(messaging, client) {
 		}
 	});
 
+	function updateWatchers() {
+		channelWatchers = {};
+		_.each(specs, function(spec) {
+			if(!channelWatchers[spec.stream]) {
+				channelWatchers[spec.stream] = [];
+			}
+			channelWatchers[spec.stream].push(spec.broadcast);
+			channelsStatus[spec.stream] = channelsStatus[spec.stream] || false;
+		});
+	}
+
 	function getStreams() {
-		return request.getAsync(STREAMS_URL + channels.join(','))
+		return request.getAsync(STREAMS_URL + Object.keys(channelWatchers).join(','))
 		.then(function(response) {
 			return JSON.parse(response.body).streams;
 		})
@@ -68,7 +73,7 @@ module.exports = function(messaging, client) {
 			_.each(streams, function(stream) {
 				streamsMap[stream.channel.name] = stream;
 			});
-			_.each(channels, function(name) {
+			_.each(channelWatchers, function(broadcast, name) {
 				if(!streamsMap[name]) {
 					streamsMap[name] = null;
 				}
@@ -85,6 +90,7 @@ module.exports = function(messaging, client) {
 		});
 	}
 
+	updateWatchers();
 	updateLoop();
 	logger.info('Twitch plugin started');
 };

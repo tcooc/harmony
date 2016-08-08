@@ -159,7 +159,9 @@ module.exports = function(messaging, client) {
 		promise = promise.then(function(messages) {
 			_.each(messages, function(message) {
 				promise = promise.then(function(response) {
-					if(response) logger.error(response);
+					if(response) {
+						logger.error(response);
+					}
 					return client.deleteMessage(message);
 				});
 			});
