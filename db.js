@@ -1,4 +1,4 @@
-var low = require('lowdb');
-var db = low('.secrets');
+var Database = require('jdb');
+var db = new Database();
 
 module.exports = db;

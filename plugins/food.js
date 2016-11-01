@@ -5,9 +5,9 @@ var Promise = require('bluebird');
 var request = Promise.promisifyAll(require('request'));
 var URL = require('url');
 
-module.exports = function(foodUrl) {
-	var randomFoods = null;
-	request.getAsync(foodUrl)
+var randomFoods = null;
+function loadAllFoods(foodUrl) {
+	return request.getAsync(foodUrl)
 	.then(function(response) {
 		var foodsString;
 		var readText = false;
@@ -31,45 +31,46 @@ module.exports = function(foodUrl) {
 		randomFoods = eval('(' + /^\s*var randomSlugs = (.*);\s*$/.exec(foodsString)[1] + ')'); // jshint ignore:line
 		logger.debug('Food is ready');
 	});
+}
 
-	function getRandomFood() {
-		var randomFood = foodUrl + '/pictures/' + randomFoods[Math.round(Math.random() * randomFoods.length)] + '/';
-		return request.getAsync(randomFood)
-		.then(function(response) {
-			var url = null;
-			var parser = new htmlparser.Parser({
-				onopentag: function(name, attribs) {
-					if(attribs.id === 'mainPhoto') {
-						url = attribs.src;
-					}
-				},
+function getRandomFood() {
+	var randomFood = foodUrl + '/pictures/' + randomFoods[Math.round(Math.random() * randomFoods.length)] + '/';
+	return request.getAsync(randomFood)
+	.then(function(response) {
+		var url = null;
+		var parser = new htmlparser.Parser({
+			onopentag: function(name, attribs) {
+				if(attribs.id === 'mainPhoto') {
+					url = attribs.src;
+				}
+			},
+		});
+		parser.write(response.body);
+		parser.end();
+		return url;
+	});
+}
+
+function getFoodImage(url) {
+	return request.getAsync({url: url, encoding: null}).then(function(response) {
+		return response.body;
+	});
+}
+
+module.exports = function(messaging, client) {
+	loadAllFoods(messaging.settings.foodUrl);
+	messaging.addCommandHandler(/^!food/i, function(message) {
+		if(randomFoods) {
+			var fileName;
+			getRandomFood()
+			.then(function(url) {
+				fileName = URL.parse(url).path.split('/').pop();
+				return getFoodImage(url);
+			})
+			.then(function(data) {
+				client.sendFile(message.channel, new Buffer(data, 'binary'), fileName);
 			});
-			parser.write(response.body);
-			parser.end();
-			return url;
-		});
-	}
-
-	function getFoodImage(url) {
-		return request.getAsync({url: url, encoding: null}).then(function(response) {
-			return response.body;
-		});
-	}
-
-	return function(messaging, client) {
-		messaging.addCommandHandler(/^!food/i, function(message) {
-			if(randomFoods) {
-				var fileName;
-				getRandomFood()
-				.then(function(url) {
-					fileName = URL.parse(url).path.split('/').pop();
-					return getFoodImage(url);
-				})
-				.then(function(data) {
-					client.sendFile(message.channel, new Buffer(data, 'binary'), fileName);
-				});
-			}
-			return true;
-		});
-	};
+		}
+		return true;
+	});
 };

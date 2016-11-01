@@ -1,4 +1,2 @@
-aiml
 node_modules
-.secrets
-.idea
+.jdb.json
