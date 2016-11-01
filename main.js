@@ -54,7 +54,7 @@ var messaging = new Messaging(client, {
 	emotes: db('emotes').value()
 });
 _.each([
-	d3Plugin, debugPlugin, discordPlugin, foodPlugin, funPlugin, twitchPlugin,
+	d3Plugin, debugPlugin, discordPlugin, foodPlugin, funPlugin,
 	twitterPlugin.link, warframePlugin, voicePlugin, helpPlugin
 ], function(plugin) {
 	messaging.addPlugin(plugin);
