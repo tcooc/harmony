@@ -29,7 +29,7 @@ module.exports = function(messaging, client) {
 			promise = Promise.resolve();
 		}
 		promise.then(function() {
-			client.sendFile(message.channel, new Buffer(readyData, 'binary'), 'ready.gif');				
+			client.sendFile(message.channel, new Buffer(readyData, 'binary'), 'ready.gif');
 		});
 		return true;
 	});

@@ -3,13 +3,19 @@ var events = require('events');
 var logger = require('logger');
 var Promise = require('bluebird');
 var request = Promise.promisifyAll(require('request'));
+var db = require('db');
 
-var STREAMS_URL = 'https://api.twitch.tv/kraken/streams?channel=';
+var STREAMS_URL = 'https://api.twitch.tv/kraken/streams';
+
+function getStreamsUrl(clientid, channel) {
+	if(Array.isArray(channel)) {
+		channel = channel.join(',');
+	}
+	return STREAMS_URL + '?client_id=' + encodeURIComponent(clientid) + '&channel=' + encodeURIComponent(channel);
+}
 
 module.exports = function(messaging, client) {
-	// each spec has stream and broadcast
-	var specs = messaging.settings.twitch.value();
-
+	var client_id = messaging.settings.twitch.client_id;
 	// map of stream->broadcast specs
 	var channelWatchers;
 	// channel status values: false, true, timestamp
@@ -17,6 +23,8 @@ module.exports = function(messaging, client) {
 	// if true, means that status has been initiated, and stream was offline
 	// if timestamp, means that status has been initiated, and stream was online
 	var channelsStatus = {};
+
+	var timeout;
 
 	var eventBus = new events.EventEmitter();
 
@@ -44,7 +52,8 @@ module.exports = function(messaging, client) {
 		}
 	});
 
-	function updateWatchers() {
+	// each spec has stream and broadcast
+	function updateWatchers(specs) {
 		channelWatchers = {};
 		_.each(specs, function(spec) {
 			if(!channelWatchers[spec.stream]) {
@@ -56,8 +65,9 @@ module.exports = function(messaging, client) {
 	}
 
 	function getStreams() {
-		return request.getAsync(STREAMS_URL + Object.keys(channelWatchers).join(','))
+		return request.getAsync(getStreamsUrl(client_id, Object.keys(channelWatchers)))
 		.then(function(response) {
+			logger.silly('getStreams', response.body);
 			return JSON.parse(response.body).streams;
 		})
 		.catch(function(error) {
@@ -67,8 +77,7 @@ module.exports = function(messaging, client) {
 
 	function update() {
 		return getStreams().then(function(streams) {
-			logger.debug('streams', streams.length);
-			logger.silly(JSON.stringify(streams));
+			logger.silly('streams', JSON.stringify(streams));
 			var streamsMap = {};
 			_.each(streams, function(stream) {
 				streamsMap[stream.channel.name] = stream;
@@ -86,11 +95,17 @@ module.exports = function(messaging, client) {
 
 	function updateLoop() {
 		update().finally(function() {
-			setTimeout(updateLoop, 30 * 1000);
+			timeout = setTimeout(updateLoop, 30 * 1000);
 		});
 	}
 
-	updateWatchers();
-	updateLoop();
-	logger.info('Twitch plugin started');
+	messaging.addCleanup(function() {
+		clearTimeout(timeout);
+	});
+
+	db.get().then(function(data) {
+		updateWatchers(data.twitch);
+		updateLoop();
+		logger.info('Twitch plugin started with spec.length=' + data.twitch.length);
+	});
 };

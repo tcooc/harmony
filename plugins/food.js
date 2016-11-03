@@ -5,7 +5,6 @@ var Promise = require('bluebird');
 var request = Promise.promisifyAll(require('request'));
 var URL = require('url');
 
-var randomFoods = null;
 function loadAllFoods(foodUrl) {
 	return request.getAsync(foodUrl)
 	.then(function(response) {
@@ -26,14 +25,10 @@ function loadAllFoods(foodUrl) {
 		parser.write(response.body);
 		parser.end();
 		return foodsString;
-	})
-	.then(function(foodsString) {
-		randomFoods = eval('(' + /^\s*var randomSlugs = (.*);\s*$/.exec(foodsString)[1] + ')'); // jshint ignore:line
-		logger.debug('Food is ready');
 	});
 }
 
-function getRandomFood() {
+function getRandomFood(foodUrl, randomFoods) {
 	var randomFood = foodUrl + '/pictures/' + randomFoods[Math.round(Math.random() * randomFoods.length)] + '/';
 	return request.getAsync(randomFood)
 	.then(function(response) {
@@ -58,13 +53,18 @@ function getFoodImage(url) {
 }
 
 module.exports = function(messaging, client) {
-	loadAllFoods(messaging.settings.foodUrl);
+	var randomFoods;
+	loadAllFoods(messaging.settings.foodUrl).then(function(foodsString) {
+		randomFoods = JSON.parse(/^\s*var randomSlugs = (.*);\s*$/.exec(foodsString)[1]);
+		logger.debug('Food is ready');
+	});
 	messaging.addCommandHandler(/^!food/i, function(message) {
 		if(randomFoods) {
 			var fileName;
-			getRandomFood()
+			getRandomFood(messaging.settings.foodUrl, randomFoods)
 			.then(function(url) {
 				fileName = URL.parse(url).path.split('/').pop();
+				logger.debug('Random food', url, fileName);
 				return getFoodImage(url);
 			})
 			.then(function(data) {

@@ -6,6 +6,7 @@ var bot = require('lib/bot');
 var db = require('db');
 var Messaging = require('lib/Messaging');
 
+var commandPlugin = require('plugins/command');
 var d3Plugin = require('plugins/d3');
 var debugPlugin = require('plugins/debug');
 var discordPlugin = require('plugins/discord');
@@ -21,7 +22,7 @@ var client = bot.create();
 var messaging;
 
 client.on('message', function(message) {
-	if(message.author.id === client.user.id) {
+	if(message.author.id === client.user.id || message.author.bot) {
 		return;
 	}
 	messaging.process(message);
@@ -42,13 +43,10 @@ client.on('ready', function() {
 db.get().then(function(data) {
 	var settings = data.settings;
 	logger.transports.console.level = settings.logLevel;
-	messaging = new Messaging(client, _.extend({
-		db: db,
-		defaultPrefix: {prefix: ''},
-	}, settings));
+	messaging = new Messaging(client, _.extend({}, settings));
 	_.each([
-		d3Plugin, debugPlugin, discordPlugin, foodPlugin, funPlugin, /*twitchPlugin,*/
-		/*twitterPlugin.link*/, warframePlugin, voicePlugin, helpPlugin
+		d3Plugin, debugPlugin, discordPlugin, foodPlugin, funPlugin, twitchPlugin,
+		twitterPlugin, warframePlugin, voicePlugin, commandPlugin, helpPlugin
 	], function(plugin) {
 		messaging.addPlugin(plugin);
 	});
@@ -59,10 +57,9 @@ db.get().then(function(data) {
 function shutdown() {
 	var exit = process.exit.bind(process, 0);
 	logger.info('Shutting down');
-	if(twitterPlugin.stream) {
-		twitterPlugin.stream.stop();
-	}
-	client.logout().then(exit, exit);
+	messaging.stop();
+	db.release();
+	client.destroy().then(exit, exit);
 }
 
 process.on('SIGINT', shutdown);

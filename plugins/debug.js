@@ -12,9 +12,16 @@ module.exports = function(messaging, client) {
 		if(message.attachments && message.attachments[0]) {
 			content += ' (' + message.attachments[0].url + ')';
 		}
-		logger.info(message.author.username + '(' + message.author.id + ')',
-			message.channel.name + '(' + message.channel.id + ')',
-			content);
+		var info = [message.author.username + '(' + message.author.id + ')'];
+		if(message.channel.server) {
+			info.push(message.channel.server.name);
+		}
+		if(message.channel.name) {
+			info.push(message.channel.name);
+		}
+		info.push('(' + message.channel.id + ')');
+		info.push(content);
+		logger.info(info.join(' '));
 		logger.silly(util.inspect(message, {depth: 1, colors: true}));
 	});
 
@@ -110,30 +117,15 @@ module.exports = function(messaging, client) {
 		return true;
 	});
 
-	messaging.addCommandHandler(/^!prefix/i, function(message, content) {
-		if(message.author.id !== messaging.settings.owner && !messaging.isOwner(message.author, message.channel.server)) {
-			return;
-		}
-		if(content.length === 1) {
-			client.sendMessage(message.channel, 'Prefix for this server is \'' + messaging.getPrefix(message) + '\'');
-		} else {
-			var prefix = content[1];
-			if(prefix === '<none>') {
-				prefix = '';
-			}
-			messaging.setPrefix(message, prefix);
-			client.sendMessage(message.channel, 'Prefix for this server set to \'' + prefix + '\'');
-		}
-		return true;
-	});
-
 	messaging.addCommandHandler(/^!loglevel/i, function(message, content) {
 		if(message.author.id !== messaging.settings.owner) {
 			return;
 		}
 		var level = content[1];
 		if(content[1] && ['info', 'debug', 'silly'].indexOf(content[1]) > -1) {
-			db('settings').chain().first().assign({'logLevel': level}).value();
+			db.update(function(data) {
+				data.settings.logLevel = level;
+			});
 			logger.transports.console.level = level;
 			client.sendMessage(message.channel, 'Log level set to `' + level + '`');
 		} else {
