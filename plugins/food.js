@@ -52,7 +52,7 @@ function getFoodImage(url) {
 	});
 }
 
-module.exports = function(messaging, client) {
+module.exports = function(messaging) {
 	var randomFoods;
 	loadAllFoods(messaging.settings.foodUrl).then(function(foodsString) {
 		randomFoods = JSON.parse(/^\s*var randomSlugs = (.*);\s*$/.exec(foodsString)[1]);
@@ -68,7 +68,7 @@ module.exports = function(messaging, client) {
 				return getFoodImage(url);
 			})
 			.then(function(data) {
-				client.sendFile(message.channel, new Buffer(data, 'binary'), fileName);
+				message.channel.sendFile(message.channel, new Buffer(data, 'binary'), fileName);
 			});
 		}
 		return true;

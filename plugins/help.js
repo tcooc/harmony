@@ -36,30 +36,30 @@ function generateHelpMessage() {
 
 module.exports = function(messaging, client) {
 	messaging.addCommandHandler(/^!about?/i, function(message) {
-		client.sendMessage(message.author, aboutMessage);
+		messaging.send(message.author, aboutMessage);
 		return true;
 	});
 
 	messaging.addCommandHandler(/^!commands?/i, function(message) {
-		client.sendMessage(message.author, generateHelpMessage());
+		messaging.send(message.author, generateHelpMessage());
 		return true;
 	});
 
 	messaging.addCommandHandler(/^!help/i, function(message) {
-		client.sendMessage(message.author, generateHelpMessage());
+		messaging.send(message.author, generateHelpMessage());
 		return true;
 	});
 
 	messaging.addCommandHandler(/^!feedback/i, function(message) {
-		client.sendMessage(client.users.get('id', messaging.settings.owner),
+		messaging.send(client.users.find('id', messaging.settings.owner),
 			'Feedback: `' + message.content + '` from ' + message.author.username + '(' + message.author.id + ')');
-		client.sendMessage(message.author, 'Thank you!');
+		messaging.send(message.author, 'Thank you!');
 		return true;
 	});
 
 	messaging.addPostHook(function(message, handled) {
-		if(!handled && message.channel instanceof Discord.PMChannel) {
-			client.sendMessage(message.author, aboutMessage);
+		if(!handled && message.channel instanceof Discord.DMChannel) {
+			messaging.send(message.settings.owner, aboutMessage);
 		}
 	});
 };

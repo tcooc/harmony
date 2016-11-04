@@ -13,7 +13,7 @@ function initializeCommands(messaging, client) {
 	messaging.addCommandHandler(/^!alertme:info/i, function(message) {
 		var broadcast = twitterBroadcasts.find({for: message.author.id});
 		if(broadcast) {
-			client.sendMessage(message.author, 'Your current watch list: `' + broadcast.accept.split(' ') + '`');
+			messaging.send(message.author, 'Your current watch list: `' + broadcast.accept.split(' ') + '`');
 		}
 		return true;
 	});
@@ -28,7 +28,7 @@ function initializeCommands(messaging, client) {
 		}
 		twitterBroadcasts.remove({for: message.author.id});
 		logger.debug('Broadcasts after remove: ' + broadcasts.length);
-		client.sendMessage(message.author, 'Alerts stopped.');
+		messaging.send(message.author, 'Alerts stopped.');
 		return true;
 	});
 
@@ -38,7 +38,7 @@ function initializeCommands(messaging, client) {
 			return /^[A-Za-z]+$/.test(watch);
 		});
 		if(watchList.length === 0 || !correctList) {
-			client.sendMessage(message.author,
+			messaging.send(message.author,
 				'Give me a space-separated list of items you want to watch for.\n' +
 				'I recommend: `!alertme Reactor Catalyst Forma Nitain`.\n' +
 				'To see your current watch list, use `!alertme:info`\n' +
@@ -60,7 +60,7 @@ function initializeCommands(messaging, client) {
 			}
 			parseBroadcastSpec(twitterBroadcast);
 			logger.debug('Broadcasts after add: ' + broadcasts.length);
-			client.sendMessage(message.author, 'Watching for `' + pattern + '`');
+			messaging.send(message.author, 'Watching for `' + pattern + '`');
 		}
 		return true;
 	});
@@ -77,7 +77,7 @@ module.exports = function(messaging, client) {
 		var newBroadcast = {
 			for: broadcastSpec.for,
 			channels: _.map(broadcastSpec.channels, function(channelId) {
-				var channel = client.channels.get('id', channelId) || client.users.get('id', channelId);
+				var channel = client.channels.find('id', channelId) || client.users.find('id', channelId);
 				if(channel) {
 					return channel;
 				} else {

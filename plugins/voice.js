@@ -7,14 +7,14 @@ module.exports = function(messaging, client) {
 
 	audioManager.eventBus.on('playing', function(playable, info) {
 		if(info) {
-			client.sendMessage(playable.output, 'Playing **' + info.title + '**');
+			messaging.send(playable.output, 'Playing **' + info.title + '**');
 		} else {
-			client.sendMessage(playable.output, 'Playing **' + playable.url + '**');
+			messaging.send(playable.output, 'Playing **' + playable.url + '**');
 		}
 	});
 
 	audioManager.eventBus.on('stopping', function(playable) {
-		client.sendMessage(playable.output, 'Finished playing ' + playable.url);
+		messaging.send(playable.output, 'Finished playing ' + playable.url);
 	});
 
 	messaging.addCommandHandler(/^!audio:play/i, function(message, content) {
@@ -24,7 +24,7 @@ module.exports = function(messaging, client) {
 			var promise;
 			if(!client.voiceConnection) {
 				if(!message.author.voiceChannel) {
-					client.sendMessage(message.channel, 'Dude, you\'re not connected to a voice channel');
+					messaging.send(message, 'Dude, you\'re not connected to a voice channel');
 					return true;
 				}
 				promise = client.joinVoiceChannel(message.author.voiceChannel);
@@ -39,13 +39,13 @@ module.exports = function(messaging, client) {
 				return audioManager.play(urlString, message.channel);
 			}).then(function(playables) {
 				if(playables.length > 1) {
-					client.sendMessage(message.channel, 'Playlist added');
+					messaging.send(message, 'Playlist added');
 				} else {
-					client.sendMessage(message.channel, 'Added to queue');
+					messaging.send(message, 'Added to queue');
 				}
 			}, function(e) {
 				logger.warn(e);
-				client.sendMessage(message.channel, 'Your link is broken');
+				messaging.send(message, 'Your link is broken');
 			});
 		}
 		return true;
@@ -55,14 +55,14 @@ module.exports = function(messaging, client) {
 		var loop = content[1] ? !!parseInt(content[1]) : audioManager.loop;
 		var shuffle = content[2] ? !!parseInt(content[2]) : audioManager.shuffle;
 		audioManager.setLooping(loop, shuffle);
-		client.sendMessage(message.channel, 'Looping ' + (audioManager.loop ? 'enabled' : 'disabled') +
+		messaging.send(message, 'Looping ' + (audioManager.loop ? 'enabled' : 'disabled') +
 			', shuffle ' + (audioManager.shuffle ? 'enabled' : 'disabled'));
 		return true;
 	});
 
 	messaging.addCommandHandler(/^!audio:skip/i, function(message) {
 		if(!client.voiceConnection) {
-			client.sendMessage(message.channel, 'Not playing anything');
+			messaging.send(message, 'Not playing anything');
 		} else {
 			audioManager.stop();
 		}
@@ -83,14 +83,14 @@ module.exports = function(messaging, client) {
 	messaging.addCommandHandler(/^!audio:clear/i, function(message) {
 		audioManager.clear();
 		audioManager.stop();
-		client.sendMessage(message.channel, 'Cleared queue');
+		messaging.send(message, 'Cleared queue');
 		return true;
 	});
 
 	messaging.addCommandHandler(/^!audio:leave/i, function(message) {
 		audioManager.stop();
 		client.leaveVoiceChannel();
-		client.sendMessage(message.channel, 'Leaving voice channel');
+		messaging.send(message, 'Leaving voice channel');
 		return true;
 	});
 };

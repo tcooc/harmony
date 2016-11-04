@@ -26,8 +26,8 @@ module.exports = function(messaging, client) {
 	});
 
 	messaging.addHook(function(message) {
-		if(message.channel instanceof Discord.PMChannel) {
-			client.sendMessage(client.users.get('id', messaging.settings.owner),
+		if(message.channel instanceof Discord.DMChannel) {
+			messaging.send(client.users.find('id', messaging.settings.owner),
 				'`' + message.content + '` from ' + message.author.username + '(' + message.author.id + ')');
 		}
 	});
@@ -40,10 +40,10 @@ module.exports = function(messaging, client) {
 		try {
 			var result = eval('(' + content.slice(1).join(' ') + ')'); // jshint ignore:line
 			logger.info(util.inspect(result, {depth: 1, colors: true}));
-			client.sendMessage(message.channel, result.toString());
+			messaging.send(message, result.toString());
 		} catch(e) {
 			logger.info(e.stack);
-			client.sendMessage(message.channel, '```'+ e.stack + '```');
+			messaging.send(message, '```'+ e.stack + '```');
 		}
 		return true;
 	});
@@ -65,7 +65,7 @@ module.exports = function(messaging, client) {
 				}
 				result = '```'+ result + '```';
 			}
-			client.sendMessage(message.channel, result);
+			messaging.send(message, result);
 		}, 0);
 		return true;
 	});
@@ -74,11 +74,11 @@ module.exports = function(messaging, client) {
 		if(message.author.id !== messaging.settings.owner || content.length < 3) {
 			return;
 		}
-		var to = client.channels.get('id', content[1]);
+		var to = client.channels.find('id', content[1]);
 		var text = content.slice(2).join(' ');
 		if(to) {
 			logger.info('Sending ' + text + ' to ' + to.id);
-			client.sendMessage(to, text);
+			messaging.send(to, text);
 		}
 		return true;
 	});
@@ -87,11 +87,11 @@ module.exports = function(messaging, client) {
 		if(message.author.id !== messaging.settings.owner || content.length < 3) {
 			return;
 		}
-		var to = client.users.get('id', content[1]);
+		var to = client.users.find('id', content[1]);
 		var text = content.slice(2).join(' ');
 		if(to) {
 			logger.info('Sending ' + text + ' to ' + to.id);
-			client.sendMessage(to, text);
+			messaging.send(to, text);
 		}
 		return true;
 	});
@@ -102,7 +102,7 @@ module.exports = function(messaging, client) {
 		}
 		var servers = client.servers.length;
 		var users = client.users.length;
-		client.sendMessage(message.channel, 'Connected to ' + servers + ' servers with a total of ' + users + ' users.');
+		messaging.send(message, 'Connected to ' + servers + ' servers with a total of ' + users + ' users.');
 		return true;
 	});
 
@@ -127,9 +127,9 @@ module.exports = function(messaging, client) {
 				data.settings.logLevel = level;
 			});
 			logger.transports.console.level = level;
-			client.sendMessage(message.channel, 'Log level set to `' + level + '`');
+			messaging.send(message, 'Log level set to `' + level + '`');
 		} else {
-			client.sendMessage(message.channel, 'Invalid log level');
+			messaging.send(message, 'Invalid log level');
 		}
 		return true;
 	});

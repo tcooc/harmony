@@ -18,7 +18,7 @@ module.exports = function(messaging, client) {
 		var newBroadcast = {
 			for: twitterBroadcast.for,
 			channels: _.map(twitterBroadcast.channels, function(channelId) {
-				var channel = client.channels.get('id', channelId) || client.users.get('id', channelId);
+				var channel = client.channels.find('id', channelId) || client.users.find('id', channelId);
 				if(channel) {
 					return channel;
 				} else {
@@ -129,7 +129,7 @@ module.exports = function(messaging, client) {
 	messaging.addCommandHandler(/^!alertme:info/i, function(message) {
 		var broadcast = twitterBroadcasts.find((broadcast) => broadcast.for === message.author.id);
 		if(broadcast) {
-			client.sendMessage(message.author, 'Your current watch list: `' + broadcast.accept.split('|').join(' ') + '`');
+			messaging.send(message.author, 'Your current watch list: `' + broadcast.accept.split('|').join(' ') + '`');
 		}
 		return true;
 	});
@@ -148,7 +148,7 @@ module.exports = function(messaging, client) {
 			});
 		}
 		logger.debug('Broadcasts after remove: ' + broadcasts.length);
-		client.sendMessage(message.author, 'Alerts stopped.');
+		messaging.send(message.author, 'Alerts stopped.');
 		return true;
 	});
 
@@ -158,7 +158,7 @@ module.exports = function(messaging, client) {
 			return /^[A-Za-z]+$/.test(watch);
 		});
 		if(watchList.length === 0 || !correctList) {
-			client.sendMessage(message.author,
+			messaging.send(message.author,
 				'Give me a space-separated list of items you want to watch for.\n' +
 				'I recommend: `!alertme Reactor Catalyst Forma Nitain`.\n' +
 				'To see your current watch list, use `!alertme:info`\n' +
@@ -183,7 +183,7 @@ module.exports = function(messaging, client) {
 			});
 			_.each(twitterBroadcasts, parseBroadcastSpec);
 			logger.debug('Broadcasts after add: ' + broadcasts.length);
-			client.sendMessage(message.author, 'Watching for `' + pattern.split('|').join(' ') + '`');
+			messaging.send(message.author, 'Watching for `' + pattern.split('|').join(' ') + '`');
 		}
 		return true;
 	});

@@ -1,19 +1,19 @@
 var Promise = require('bluebird');
 var request = Promise.promisifyAll(require('request'));
 
-module.exports = function(messaging, client) {
+module.exports = function(messaging) {
 	messaging.addCommandHandler(/^soon/i, function(message) {
-		client.sendMessage(message.channel, 'Soon' + String.fromCharCode(8482));
+		messaging.send(message, 'Soon' + String.fromCharCode(8482));
 		return true;
 	});
 
 	messaging.addCommandHandler(/^!unflip/i, function(message) {
-		client.sendMessage(message.channel, '┬─┬ ◟(`ﮧ´ ◟ )');
+		messaging.send(message, '┬─┬ ◟(`ﮧ´ ◟ )');
 		return true;
 	});
 
 	messaging.addCommandHandler(/^!flip/i, function(message) {
-		client.sendMessage(message.channel, '(╯°□°）╯︵ ┻━┻');
+		messaging.send(message, '(╯°□°）╯︵ ┻━┻');
 		return true;
 	});
 
@@ -29,7 +29,7 @@ module.exports = function(messaging, client) {
 			promise = Promise.resolve();
 		}
 		promise.then(function() {
-			client.sendFile(message.channel, new Buffer(readyData, 'binary'), 'ready.gif');
+			message.channel.sendFile(new Buffer(readyData, 'binary'), 'ready.gif');
 		});
 		return true;
 	});

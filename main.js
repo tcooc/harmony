@@ -1,8 +1,8 @@
 require('app-module-path').addPath(__dirname);
 var _ = require('underscore');
+var Discord = require('discord.js');
 var logger = require('logger');
 
-var bot = require('lib/bot');
 var db = require('db');
 var Messaging = require('lib/Messaging');
 
@@ -18,7 +18,8 @@ var twitterPlugin = require('plugins/twitter');
 var voicePlugin = require('plugins/voice');
 var warframePlugin = require('plugins/warframe');
 
-var client = bot.create();
+var client = new Discord.Client();
+
 var messaging;
 
 client.on('message', function(message) {
@@ -45,8 +46,8 @@ db.get().then(function(data) {
 	logger.transports.console.level = settings.logLevel;
 	messaging = new Messaging(client, _.extend({}, settings));
 	_.each([
-		d3Plugin, debugPlugin, discordPlugin, foodPlugin, funPlugin, twitchPlugin,
-		twitterPlugin, warframePlugin, voicePlugin, commandPlugin, helpPlugin
+		d3Plugin, debugPlugin, /*discordPlugin, foodPlugin, funPlugin, twitchPlugin,
+		twitterPlugin, warframePlugin, voicePlugin, commandPlugin, helpPlugin*/
 	], function(plugin) {
 		messaging.addPlugin(plugin);
 	});

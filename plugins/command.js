@@ -12,7 +12,7 @@ var ARG_REGEX = /^[1-9][0-9]?$/;
 var USER_REGEX = /^user$/i;
 var API_REGEX = /^api (https?:\/\/[^ ]+)$/i;
 
-module.exports = function(messaging, client) {
+module.exports = function(messaging) {
 
 	var commandCache = {};
 
@@ -38,7 +38,7 @@ module.exports = function(messaging, client) {
 			var name = args[1];
 			var response = args.slice(2).join(' ');
 			if(!name || !response) {
-				client.sendMessage(message.channel, 'Please specify a command and response');
+				messaging.send(message, 'Please specify a command and response');
 			} else {
 				// set server command
 				db.update(function(data) {
@@ -46,10 +46,10 @@ module.exports = function(messaging, client) {
 					commands[name] = response;
 					refreshCache(id, data, true);
 				});
-				client.sendMessage(message.channel, name + ' created');
+				messaging.send(message, name + ' created');
 			}
 		} else {
-			client.sendMessage(message.channel, 'Only the owner may edit custom commands');
+			messaging.send(message, 'Only the owner may edit custom commands');
 		}
 		return true;
 	});
@@ -59,7 +59,7 @@ module.exports = function(messaging, client) {
 		if(id) {
 			var name = args[1];
 			if(!name) {
-				client.sendMessage(message.channel, 'Please specify a command to delete');
+				messaging.send(message, 'Please specify a command to delete');
 			} else {
 				// remove server command
 				db.update(function(data) {
@@ -69,10 +69,10 @@ module.exports = function(messaging, client) {
 						refreshCache(id, data, true);
 					}
 				});
-				client.sendMessage(message.channel, name + ' deleted');
+				messaging.send(message, name + ' deleted');
 			}
 		} else {
-			client.sendMessage(message.channel, 'Only the owner may edit custom commands');
+			messaging.send(message, 'Only the owner may edit custom commands');
 		}
 		return true;
 	});
@@ -81,15 +81,15 @@ module.exports = function(messaging, client) {
 		var id = getCommandsId(message, true);
 		if(id) {
 			var commands = commandCache[id] || {};
-			client.sendMessage(message.channel, 'Custom commands:\n`' + Object.keys(commands).join('`, `') + '`');
+			messaging.send(message, 'Custom commands:\n`' + Object.keys(commands).join('`, `') + '`');
 		} else {
-			client.sendMessage(message.channel, 'Use this command in a server to print server commands');
+			messaging.send(message, 'Use this command in a server to print server commands');
 		}
 		return true;
 	});
 
 	messaging.addCommandHandler(/^!custom/i, function(message) {
-		client.sendMessage(message.author, '!custom:list, !custom:add, !custom:remove');
+		messaging.send(message.author, '!custom:list, !custom:add, !custom:remove');
 		return true;
 	});
 
@@ -117,7 +117,7 @@ module.exports = function(messaging, client) {
 	});
 
 	function getCommandsId(message, readonly) {
-		var isGlobal = message.channel instanceof Discord.PMChannel;
+		var isGlobal = message.channel instanceof Discord.DMChannel;
 		var isOwner = message.author.id === messaging.settings.owner || messaging.isOwner(message.author, message.channel.server);
 		var id = isGlobal ? GLOBAL_COM : message.channel.server.id;
 		if(isGlobal) {
@@ -172,7 +172,7 @@ module.exports = function(messaging, client) {
 		if(args[0].toLowerCase() === this.command) {
 			// exec
 			this.build(message, args).then(function(response) {
-				client.sendMessage(message.channel, response);
+				messaging.send(message, response);
 			});
 			return true;
 		}
