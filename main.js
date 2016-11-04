@@ -18,6 +18,10 @@ var twitterPlugin = require('plugins/twitter');
 var voicePlugin = require('plugins/voice');
 var warframePlugin = require('plugins/warframe');
 
+process.on('unhandledRejection', (reason, p) => {
+	logger.error('Unhandled Rejection at: Promise', p, 'reason:', reason);
+});
+
 var client = new Discord.Client();
 
 var messaging;
@@ -41,13 +45,14 @@ client.on('ready', function() {
 	logger.info('Harmony activated');
 });
 
+// TODO turn client.users.get into fetchUser
 db.get().then(function(data) {
 	var settings = data.settings;
 	logger.transports.console.level = settings.logLevel;
 	messaging = new Messaging(client, _.extend({}, settings));
 	_.each([
-		d3Plugin, debugPlugin, /*discordPlugin, foodPlugin, funPlugin, twitchPlugin,
-		twitterPlugin, warframePlugin, voicePlugin, commandPlugin, helpPlugin*/
+		d3Plugin, debugPlugin, discordPlugin, foodPlugin, funPlugin, twitchPlugin,
+		twitterPlugin, warframePlugin, voicePlugin, commandPlugin, helpPlugin
 	], function(plugin) {
 		messaging.addPlugin(plugin);
 	});

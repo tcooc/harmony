@@ -1,4 +1,6 @@
 var Discord = require('discord.js');
+var Constants = require('discord.js/src/util/Constants');
+var logger = require('logger');
 
 module.exports = function(messaging, client) {
 	messaging.addCommandHandler(/^!prefix/i, function(message, content) {
@@ -18,14 +20,20 @@ module.exports = function(messaging, client) {
 		return true;
 	});
 
+	function joinServer(invite) {
+		return client.rest.makeRequest('post', Constants.Endpoints.invite(invite.code), true);
+	}
+
 	messaging.addCommandHandler(/^!invite/i, function(message, content) {
 		if(message.channel instanceof Discord.DMChannel) {
-			client.joinServer(content[1], function(err, server) {
-				if(err) {
-					messaging.send(message, 'Something is wrong with the invite url, please try again');
-				} else {
-					messaging.send(message, 'Joined ' + server.name + ' successfully');
-				}
+			client.fetchInvite(content[1]).then(function(invite) {
+				return joinServer(invite);
+			}).then(function(server) {
+				logger.debug(server);
+				messaging.send(message, 'Joined ' + server.name + ' successfully');
+			}).catch(function(e) {
+				logger.debug(e);
+				messaging.send(message, 'Something is wrong with the invite url, please try again');
 			});
 			return true;
 		}

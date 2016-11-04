@@ -18,7 +18,11 @@ module.exports = function(messaging, client) {
 		var newBroadcast = {
 			for: twitterBroadcast.for,
 			channels: _.map(twitterBroadcast.channels, function(channelId) {
-				var channel = client.channels.find('id', channelId) || client.users.find('id', channelId);
+				var channel = client.channels.find('id', channelId);
+				if(!channel) {
+					var user = client.users.find('id', channelId);
+					channel = client.channels.find(channel => channel.recipient && channel.recipient.id === user.id);
+				}
 				if(channel) {
 					return channel;
 				} else {
@@ -45,16 +49,16 @@ module.exports = function(messaging, client) {
 		var promise = Promise.resolve();
 		_.each(channels, function(channel) {
 			promise = promise.then(function() {
-				return client.getChannelLogs(channel, amount);
+				return channel.fetchMessages({limit: amount});
 			})
 			.then(function(messages) {
-				return _.filter(messages, function(message) {
+				return messages.filter(function(message) {
 					return message.author.id === client.user.id;
 				});
 			})
 			.then(function(messages) {
-				return Promise.all(_.map(messages, function(message) {
-					updateAlertMessage(message);
+				return Promise.all(messages.map(function(message) {
+					return updateAlertMessage(message);
 				}));
 			});
 		});
@@ -67,11 +71,11 @@ module.exports = function(messaging, client) {
 		var expiresIn = (expiresAt - Date.now()) / MINUTE;
 		logger.silly('Twitter: expires in ', + expiresIn);
 		if(expiresIn <= 0) {
-			client.deleteMessage(message);
+			return message.delete();
 		} else {
 			var newContent = message.content.replace(ALERT_TWEET_REGEX, '- ' + Math.round(expiresIn)  + 'm -');
-			var promise = newContent !== message.content ? client.updateMessage(message, newContent) : Promise.resolve(message);
-			promise.then(function(message) {
+			var promise = newContent !== message.content ? message.edit(newContent) : Promise.resolve(message);
+			return promise.then(function(message) {
 				logger.silly('Twitter: scheduling tick ', message.content, content);
 				setTimeout(doUpdateAlertMessage.bind(null, message, timestamp, content), 10 * SECOND);
 			});
@@ -118,7 +122,9 @@ module.exports = function(messaging, client) {
 		client.on('ready', function() {
 			_.each(twitterBroadcasts, parseBroadcastSpec);
 			_.each(broadcasts, function(broadcast) {
-				cleanup(broadcast.channels, 500);
+				cleanup(broadcast.channels, 100).catch(function(e) {
+					logger.error(e);
+				});
 			});
 			logger.info('Twitter broadcasting ' + broadcasts.length + ' stream(s).');
 		});

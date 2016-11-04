@@ -27,7 +27,7 @@ module.exports = function(messaging, client) {
 					messaging.send(message, 'Dude, you\'re not connected to a voice channel');
 					return true;
 				}
-				promise = client.joinVoiceChannel(message.author.voiceChannel);
+				promise = message.author.voiceChannel.join();
 			} else {
 				promise = Promise.resolve();
 			}

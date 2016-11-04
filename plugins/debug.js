@@ -13,8 +13,8 @@ module.exports = function(messaging, client) {
 			content += ' (' + message.attachments[0].url + ')';
 		}
 		var info = [message.author.username + '(' + message.author.id + ')'];
-		if(message.channel.server) {
-			info.push(message.channel.server.name);
+		if(message.guild) {
+			info.push(message.guild.name);
 		}
 		if(message.channel.name) {
 			info.push(message.channel.name);
@@ -136,11 +136,11 @@ module.exports = function(messaging, client) {
 
 
 	messaging.addCommandHandler(/^!clear/i, function(message, content) {
-		if(message.author.id !== messaging.settings.owner && !messaging.isOwner(message.author, message.channel.server)) {
+		if(message.author.id !== messaging.settings.owner && !messaging.isOwner(message.author, message.guild)) {
 			return;
 		}
 		var type = content[1];
-		var promise = client.getChannelLogs(message.channel, 100);
+		var promise = message.channel.fetchMessages({limit: 100});
 		if(type !== 'all') {
 			promise = promise.then(function(messages) {
 				return _.filter(messages, function(message) {

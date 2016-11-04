@@ -118,8 +118,8 @@ module.exports = function(messaging) {
 
 	function getCommandsId(message, readonly) {
 		var isGlobal = message.channel instanceof Discord.DMChannel;
-		var isOwner = message.author.id === messaging.settings.owner || messaging.isOwner(message.author, message.channel.server);
-		var id = isGlobal ? GLOBAL_COM : message.channel.server.id;
+		var isOwner = message.author.id === messaging.settings.owner || messaging.isOwner(message.author, message.guild);
+		var id = isGlobal ? GLOBAL_COM : message.guild.id;
 		if(isGlobal) {
 			if(isOwner) {
 				return id;
