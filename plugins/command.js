@@ -18,6 +18,7 @@ module.exports = function(messaging, client) {
 
 	function refreshCache(id, data, force) {
 		if(force || !commandCache[id]) {
+			logger.debug('refreshing command cache for ' + id);
 			var commands = data.customCommands[id];
 			commandCache[id] = _.mapObject(commands, function(response, name) {
 				return new CustomCommand(name, response);
@@ -93,21 +94,23 @@ module.exports = function(messaging, client) {
 	});
 
 	messaging.addCommandHandler(/.*/, function(message, args) {
-		var id = getCommandsId(message, true);
-		var promise;
-		if(id && args.length) {
-			if(commandCache[id]) {
-				promise = Promise.resolve(commandCache[id]);
-			} else {
-				promise = db.get().then(function(data) {
-					refreshCache(id, data);
-					return commandCache[id];
-				});
+		var promise, id, ids;
+		if(args.length) {
+			ids = [GLOBAL_COM];
+			id = getCommandsId(message, true);
+			if(id) {
+				ids.unshift(id);
 			}
-			return promise.then(function(commands) {
-				return !!_.find(commands, function(command) {
-					return command.process(message);
-				});
+			if(_.find(ids, (id) => !commandCache[id])) { // if there exists uncached commands
+				promise = db.get().then((data) => _.each(ids, (id) => refreshCache(id, data)));
+			} else {
+				promise = Promise.resolve();
+			}
+			return promise.then(function() {
+				return _(ids).chain()
+					.map((id) => commandCache[id])
+					.reduce((memo, value) => memo.concat(_.toArray(value)), [])
+					.find((command) => command.process(message)).value();
 			});
 		}
 		return false;
@@ -135,17 +138,17 @@ module.exports = function(messaging, client) {
 		this.response = response;
 		this.builders = [];
 		var commandRegex = new RegExp(COMMAND_REGEX), match, innerMatch;
-		while(match = commandRegex.exec(response)) {
+		while(!!(match = commandRegex.exec(response))) {
 			logger.silly(match);
 			if(typeof match[1] === 'string') {
 				if(match[1]) {
 					this.builders.push(_rawStringBuilder(match[1]));
 				}
 				if(ARG_REGEX.test(match[3])) {
-					this.builders.push(_argBuilder(match[1]));
+					this.builders.push(_argBuilder(match[3]));
 				} else if(USER_REGEX.test(match[3])) {
 					this.builders.push(_userBuilder());
-				} else if(innerMatch = API_REGEX.exec(match[3])) {
+				} else if(!!(innerMatch = API_REGEX.exec(match[3]))) {
 					this.builders.push(_apiBuilder(innerMatch));
 				} else {
 					this.builders.push(_rawStringBuilder(match[2]));
@@ -174,6 +177,10 @@ module.exports = function(messaging, client) {
 			return true;
 		}
 		return false;
+	};
+
+	CustomCommand.prototype.toString = function() {
+		return this.command + ' ' + this.response;
 	};
 
 	// just send raw string data

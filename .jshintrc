@@ -12,5 +12,8 @@
     "unused": true,
     "eqeqeq": true,
     "node": true,
-    "esnext": true
+    "esnext": true,
+    "globals": {
+        "Promise": true
+    }
 }

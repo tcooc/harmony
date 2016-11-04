@@ -40,7 +40,7 @@ module.exports = function(messaging, client) {
 		return true;
 	});
 
-	messaging.addCommandHandler(/^!sheev?/i, function(message, content) {
+	messaging.addCommandHandler(/^!sheev/i, function(message, content) {
 		var qs = encodeURIComponent(content.slice(1).join(' '));
 		bot.helpers.simpleGET('http://wf.tcooc.net/sheev/strats?q=' + qs).then(function(body) {
 			client.sendMessage(message.channel, body);
