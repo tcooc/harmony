@@ -61,11 +61,13 @@ db.get().then(function(data) {
 
 
 function shutdown() {
-	var exit = process.exit.bind(process, 0);
 	logger.info('Shutting down');
 	messaging.stop();
 	db.release();
-	client.destroy().then(exit, exit);
+	client.destroy();
+	setTimeout(function() {
+		process.exit(0);
+	}, 1000);
 }
 
 process.on('SIGINT', shutdown);

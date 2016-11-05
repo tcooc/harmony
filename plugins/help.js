@@ -59,7 +59,7 @@ module.exports = function(messaging, client) {
 
 	messaging.addPostHook(function(message, handled) {
 		if(!handled && message.channel instanceof Discord.DMChannel) {
-			messaging.send(message.settings.owner, aboutMessage);
+			messaging.send(messaging.settings.owner, aboutMessage);
 		}
 	});
 };

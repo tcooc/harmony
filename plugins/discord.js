@@ -28,9 +28,9 @@ module.exports = function(messaging, client) {
 		if(message.channel instanceof Discord.DMChannel) {
 			client.fetchInvite(content[1]).then(function(invite) {
 				return joinServer(invite);
-			}).then(function(server) {
-				logger.debug(server);
-				messaging.send(message, 'Joined ' + server.name + ' successfully');
+			}).then(function(invite) {
+				logger.debug(invite);
+				messaging.send(message, 'Joined ' + invite.guild.name + ' successfully');
 			}).catch(function(e) {
 				logger.debug(e);
 				messaging.send(message, 'Something is wrong with the invite url, please try again');

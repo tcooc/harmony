@@ -77,7 +77,7 @@ module.exports = function(messaging, client) {
 			var promise = newContent !== message.content ? message.edit(newContent) : Promise.resolve(message);
 			return promise.then(function(message) {
 				logger.silly('Twitter: scheduling tick ', message.content, content);
-				setTimeout(doUpdateAlertMessage.bind(null, message, timestamp, content), 10 * SECOND);
+				setTimeout(() => doUpdateAlertMessage(message, timestamp, content), 10 * SECOND);
 			});
 		}
 	}
@@ -85,7 +85,7 @@ module.exports = function(messaging, client) {
 	function updateAlertMessage(message) {
 		if(ALERT_TWEET_REGEX.test(message.content)) {
 			logger.debug('Twitter: updating message ' + message.content);
-			return doUpdateAlertMessage(message, message.editedTimestamp || message.timestamp, message.content);
+			return doUpdateAlertMessage(message, message.editedTimestamp || message.createdTimestamp, message.content);
 		}
 	}
 

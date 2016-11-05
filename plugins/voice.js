@@ -1,9 +1,10 @@
 var _ = require('underscore');
+var Discord = require('discord.js');
 var audio = require('lib/audio');
 var logger = require('logger');
 
 module.exports = function(messaging, client) {
-	var audioManager = new audio.AudioManager(messaging);
+	var audioManager = new audio.AudioManager(messaging.settings);
 
 	audioManager.eventBus.on('playing', function(playable, info) {
 		if(info) {
@@ -22,12 +23,17 @@ module.exports = function(messaging, client) {
 			audioManager.start();
 		} else {
 			var promise;
-			if(!client.voiceConnection) {
-				if(!message.author.voiceChannel) {
+			if(!audioManager.voiceConnection) {
+				var userVoiceChannel = client.channels.find((channel) => {
+					return channel instanceof Discord.VoiceChannel && channel.members.find((member) => member.id === message.author.id);
+				});
+				if(!userVoiceChannel) {
 					messaging.send(message, 'Dude, you\'re not connected to a voice channel');
 					return true;
 				}
-				promise = message.author.voiceChannel.join();
+				promise = userVoiceChannel.join().then(function(connection) {
+					audioManager.voiceConnection = connection;
+				});
 			} else {
 				promise = Promise.resolve();
 			}
@@ -61,7 +67,7 @@ module.exports = function(messaging, client) {
 	});
 
 	messaging.addCommandHandler(/^!audio:skip/i, function(message) {
-		if(!client.voiceConnection) {
+		if(!audioManager.voiceConnection) {
 			messaging.send(message, 'Not playing anything');
 		} else {
 			audioManager.stop();
@@ -89,7 +95,8 @@ module.exports = function(messaging, client) {
 
 	messaging.addCommandHandler(/^!audio:leave/i, function(message) {
 		audioManager.stop();
-		client.leaveVoiceChannel();
+		audioManager.voiceConnection.disconnect();
+		audioManager.voiceConnection = null;
 		messaging.send(message, 'Leaving voice channel');
 		return true;
 	});
