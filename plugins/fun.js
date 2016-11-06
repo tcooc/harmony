@@ -1,5 +1,4 @@
-var Promise = require('bluebird');
-var request = Promise.promisifyAll(require('request'));
+var bot = require('lib/bot');
 
 module.exports = function(messaging) {
 	messaging.addCommandHandler(/^soon/i, function(message) {
@@ -19,17 +18,11 @@ module.exports = function(messaging) {
 
 	var readyData;
 	messaging.addCommandHandler(/^!ready/i, function(message) {
-		var promise;
 		if(!readyData) {
-			promise = request.getAsync({url: 'http://tinyurl.com/BodyisReady123', encoding: null})
-			.then(function(response) {
-				readyData = response.body;
-			});
-		} else {
-			promise = Promise.resolve();
+			readyData = bot.getFile('http://tinyurl.com/BodyisReady123');
 		}
-		promise.then(function() {
-			message.channel.sendFile(new Buffer(readyData, 'binary'), 'ready.gif');
+		readyData.then(function(data) {
+			message.channel.sendFile(new Buffer(data, 'binary'), 'ready.gif');
 		});
 		return true;
 	});

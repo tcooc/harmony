@@ -4,6 +4,7 @@ var logger = require('logger');
 var Promise = require('bluebird');
 var request = Promise.promisifyAll(require('request'));
 var URL = require('url');
+var bot = require('lib/bot');
 
 function loadAllFoods(foodUrl) {
 	return request.getAsync(foodUrl)
@@ -46,12 +47,6 @@ function getRandomFood(foodUrl, randomFoods) {
 	});
 }
 
-function getFoodImage(url) {
-	return request.getAsync({url: url, encoding: null}).then(function(response) {
-		return response.body;
-	});
-}
-
 module.exports = function(messaging) {
 	var randomFoods;
 	loadAllFoods(messaging.settings.foodUrl).then(function(foodsString) {
@@ -65,10 +60,10 @@ module.exports = function(messaging) {
 			.then(function(url) {
 				fileName = URL.parse(url).path.split('/').pop();
 				logger.debug('Random food', url, fileName);
-				return getFoodImage(url);
+				return bot.getFile(url);
 			})
 			.then(function(data) {
-				message.channel.sendFile(message.channel, new Buffer(data, 'binary'), fileName);
+				message.channel.sendFile(new Buffer(data, 'binary'), fileName);
 			});
 		}
 		return true;

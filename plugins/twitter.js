@@ -1,6 +1,7 @@
 var _ = require('underscore');
 var Twit = require('twit');
 var logger = require('logger');
+var bot = require('lib/bot');
 var db = require('db');
 
 var ALERT_TWEET_REGEX = /- ([0-9]+)m -/;
@@ -17,18 +18,7 @@ module.exports = function(messaging, client) {
 	function parseBroadcastSpec(twitterBroadcast) {
 		var newBroadcast = {
 			for: twitterBroadcast.for,
-			channels: _.map(twitterBroadcast.channels, function(channelId) {
-				var channel = client.channels.find('id', channelId);
-				if(!channel) {
-					var user = client.users.find('id', channelId);
-					channel = client.channels.find(channel => channel.recipient && channel.recipient.id === user.id);
-				}
-				if(channel) {
-					return channel;
-				} else {
-					logger.error('channel ' + channelId + ' not found');
-				}
-			}),
+			channels: _.map(twitterBroadcast.channels, (id) => bot.getChannel(client, id)),
 			accept: new RegExp(twitterBroadcast.accept, 'i')
 		};
 		if(twitterBroadcast.for) {
@@ -109,15 +99,24 @@ module.exports = function(messaging, client) {
 		}
 	}
 
-	db.get().then(function(data) {
-		twitterBroadcasts = data.twitterBroadcasts;
-
+	function createStream() {
+		logger.debug('Creating Twitter stream');
 		stream = twitterClient.stream('statuses/filter', {follow: twitterFollow});
 		stream.on('tweet', handleTweet);
 		stream.on('error', function(error) {
-			logger.error('Twitter error: ' + error.source);
-			throw error;
+			logger.error('Twitter error: ', error);
 		});
+		stream.on('disconnect', function() {
+			logger.error('Twitter disconnect', arguments);
+			setTimeout(function() {
+				createStream();
+			}, 10000);
+		});
+	}
+
+	db.get().then(function(data) {
+		twitterBroadcasts = data.twitterBroadcasts;
+		createStream();
 
 		client.on('ready', function() {
 			_.each(twitterBroadcasts, parseBroadcastSpec);

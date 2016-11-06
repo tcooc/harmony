@@ -3,8 +3,10 @@ var Promise = require('bluebird');
 var request = Promise.promisifyAll(require('request'));
 
 var bot = require('lib/bot');
+var logger = require('logger');
+var db = require('db');
 
-module.exports = function(messaging) {
+module.exports = function(messaging, client) {
 	messaging.addCommandHandler(/^!trader/i, function(message) {
 		bot.helpers.simpleGET('http://wf.tcooc.net/trader').then(function(body) {
 			messaging.send(message, body);
@@ -69,5 +71,74 @@ module.exports = function(messaging) {
 		messaging.send(message,
 			'Hek: http://tinyurl.com/qb752oj Nightmare: http://tinyurl.com/p8og6xf Jordas: http://tinyurl.com/prpebzh');
 		return true;
+	});
+
+	// events
+	var warframeEventBroadcasts;
+
+	function updateEvents() {
+		return bot.helpers.simpleGET('http://wf.tcooc.net/events.json').then(function(body) {
+			var events = JSON.parse(body);
+			return db.update(function(data) {
+				return _.filter(events, function(event) {
+					var isNew = !data.warframeEvents[event._id.$id];
+					data.warframeEvents[event._id.$id] = true;
+					return isNew;
+				});
+			});
+		});
+	}
+
+	function updateEventsLoop() {
+		updateEvents()
+		.then(function(newEvents) {
+			return Promise.all(_.map(newEvents, fillEvent));
+		})
+		.then(function(newEvents) {
+			logger.debug('new events', newEvents);
+			_.each(newEvents, function(event) {
+				_.each(warframeEventBroadcasts, function(config) {
+					var message = event.Messages.find((message) => message.LanguageCode === config.lang) || event.Messages[0];
+					logger.debug('sending', message);
+					if(event.image) {
+						config.channel.sendFile.apply(config.channel, formatMessage(event, message));
+					} else {
+						config.channel.sendMessage.apply(config.channel, formatMessage(event, message));
+					}
+				});
+			});
+		});
+	}
+
+	function fillEvent(event) {
+		return bot.getFile(event.ImageUrl).then(function(data) {
+			event.image = new Buffer(data, 'binary');
+			return event;
+		}).catch(function() {
+			return event;
+		});
+	}
+
+	function formatMessage(event, message) {
+		var file = event.image;
+		var content = message.Message + '(' + event.Prop + ')';
+		if(file) {
+			return [file, event.ImageUrl.split('/').pop(), content];
+		}
+		return [content];
+	}
+
+	client.on('ready', function() {
+		db.get().then(function(data) {
+			warframeEventBroadcasts = _.mapObject(data.warframeEventBroadcasts, function(config, id) {
+				config = _.clone(config);
+				config.channel = bot.getChannel(client, id);
+				return config;
+			});
+		})
+		.then(updateEvents)
+		.then(function() {
+			setInterval(updateEventsLoop, 30 * 1000);
+		});
 	});
 };

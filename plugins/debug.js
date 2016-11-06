@@ -1,4 +1,3 @@
-var _ = require('underscore');
 var child_process = require('child_process');
 var Discord = require('discord.js');
 var db = require('db');
@@ -143,18 +142,15 @@ module.exports = function(messaging, client) {
 		var promise = message.channel.fetchMessages({limit: 100});
 		if(type !== 'all') {
 			promise = promise.then(function(messages) {
-				return _.filter(messages, function(message) {
+				return messages.filter(function(message) {
 					return message.author.id === client.user.id;
 				});
 			});
 		}
 		promise = promise.then(function(messages) {
-			_.each(messages, function(message) {
-				promise = promise.then(function(response) {
-					if(response) {
-						logger.error(response);
-					}
-					return client.deleteMessage(message);
+			messages.forEach(function(message) {
+				promise = promise.then(function() {
+					return message.delete();
 				});
 			});
 		});

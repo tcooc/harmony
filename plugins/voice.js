@@ -5,6 +5,7 @@ var logger = require('logger');
 
 module.exports = function(messaging, client) {
 	var audioManager = new audio.AudioManager(messaging.settings);
+	audioManager.shuffle = true;
 
 	audioManager.eventBus.on('playing', function(playable, info) {
 		if(info) {
@@ -88,8 +89,7 @@ module.exports = function(messaging, client) {
 
 	messaging.addCommandHandler(/^!audio:clear/i, function(message) {
 		audioManager.clear();
-		audioManager.stop();
-		messaging.send(message, 'Cleared queue');
+		messaging.send(message, 'Cleared player');
 		return true;
 	});
 
