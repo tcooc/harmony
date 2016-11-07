@@ -24,8 +24,8 @@ module.exports = function(messaging, client) {
 		logger.silly(util.inspect(message, {depth: 1, colors: true}));
 	});
 
-	messaging.addHook(function(message) {
-		if(message.channel instanceof Discord.DMChannel) {
+	messaging.addPostHook(function(message, handled) {
+		if(!handled && message.channel instanceof Discord.DMChannel) {
 			messaging.send(client.users.find('id', messaging.settings.owner),
 				'`' + message.content + '` from ' + message.author.username + '(' + message.author.id + ')');
 		}

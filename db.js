@@ -1,4 +1,4 @@
-var Database = require('jdb');
-var db = new Database();
+const Database = require('jdb');
+const db = new Database();
 
 module.exports = db;

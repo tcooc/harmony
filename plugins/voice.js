@@ -67,7 +67,7 @@ module.exports = function(messaging, client) {
 		return true;
 	});
 
-	messaging.addCommandHandler(/^!audio:skip/i, function(message) {
+	messaging.addCommandHandler(/^!audio:next/i, function(message) {
 		if(!audioManager.voiceConnection) {
 			messaging.send(message, 'Not playing anything');
 		} else {
@@ -77,7 +77,7 @@ module.exports = function(messaging, client) {
 	});
 
 	messaging.addCommandHandler(/^!audio:remove/i, function(message, content) {
-		logger.debug('playing', audioManager.currentlyPlaying.url);
+		logger.debug('playing', audioManager.currentlyPlaying ? audioManager.currentlyPlaying.url : 'nothing');
 		logger.debug('queue', _.pluck(audioManager.queue, 'url'));
 		logger.debug('played', _.pluck(audioManager.played, 'url'));
 		var url = content[1];

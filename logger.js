@@ -1,11 +1,11 @@
-var util =require('util');
-var winston = require('winston');
+const util = require('util');
+const winston = require('winston');
 
 function formatMeta(meta) {
 	return meta && Object.keys(meta).length ? util.inspect(meta, {depth: 1, colors: true}) : null;
 }
 
-var consoleTransport = new (winston.transports.Console)({
+const consoleTransport = new (winston.transports.Console)({
 	timestamp: function() {
 		return new Date().toISOString();
 	},
