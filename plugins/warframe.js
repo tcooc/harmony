@@ -95,7 +95,9 @@ module.exports = function(messaging, client) {
 			return Promise.all(_.map(newEvents, fillEvent));
 		})
 		.then(function(newEvents) {
-			logger.debug('new events', newEvents);
+			if(newEvents.length) {
+				logger.debug('new events', newEvents);
+			}
 			_.each(newEvents, function(event) {
 				_.each(warframeEventBroadcasts, function(config) {
 					var message = event.Messages.find((message) => message.LanguageCode === config.lang) || event.Messages[0];

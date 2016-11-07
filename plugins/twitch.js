@@ -67,7 +67,7 @@ module.exports = function(messaging, client) {
 	function getStreams() {
 		return request.getAsync(getStreamsUrl(client_id, Object.keys(channelWatchers)))
 		.then(function(response) {
-			logger.debug('getStreams', response.body);
+			logger.silly('getStreams', response.body);
 			return JSON.parse(response.body).streams;
 		})
 		.catch(function(error) {
