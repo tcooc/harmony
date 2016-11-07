@@ -88,11 +88,6 @@ module.exports = function(messaging) {
 		return true;
 	});
 
-	messaging.addCommandHandler(/^!custom/i, function(message) {
-		messaging.send(message.author, '!custom:list, !custom:add, !custom:remove');
-		return true;
-	});
-
 	messaging.addCommandHandler(/.*/, function(message, args) {
 		var promise, id, ids;
 		if(args.length) {

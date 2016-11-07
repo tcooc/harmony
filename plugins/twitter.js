@@ -163,11 +163,7 @@ module.exports = function(messaging, client) {
 			return /^[A-Za-z]+$/.test(watch);
 		});
 		if(watchList.length === 0 || !correctList) {
-			messaging.send(message.author,
-				'Give me a space-separated list of items you want to watch for.\n' +
-				'I recommend: `!alertme Reactor Catalyst Forma Nitain`.\n' +
-				'To see your current watch list, use `!alertme:info`\n' +
-				'To stop receiving notifications, use `!alertme:stop`');
+			return false;
 		} else {
 			var pattern = watchList.join('|');
 			var twitterBroadcast = {

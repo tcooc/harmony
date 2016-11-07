@@ -76,6 +76,17 @@ module.exports = function(messaging, client) {
 	// events
 	var warframeEventBroadcasts;
 
+	// update local broadcast cache
+	function updateBroadcasts() {
+		return db.get().then(function(data) {
+			warframeEventBroadcasts = _.mapObject(data.warframeEventBroadcasts, function(config, id) {
+				config = _.clone(config);
+				config.channel = bot.getChannel(client, id);
+				return config;
+			});
+		});
+	}
+
 	function updateEvents() {
 		return bot.helpers.simpleGET('http://wf.tcooc.net/events.json').then(function(body) {
 			var events = JSON.parse(body);
@@ -92,7 +103,7 @@ module.exports = function(messaging, client) {
 	function updateEventsLoop() {
 		updateEvents()
 		.then(function(newEvents) {
-			return Promise.all(_.map(newEvents, fillEvent));
+			return Promise.all(_.map(newEvents, _fillEvent));
 		})
 		.then(function(newEvents) {
 			if(newEvents.length) {
@@ -103,16 +114,16 @@ module.exports = function(messaging, client) {
 					var message = event.Messages.find((message) => message.LanguageCode === config.lang) || event.Messages[0];
 					logger.debug('sending', message);
 					if(event.image) {
-						config.channel.sendFile.apply(config.channel, formatMessage(event, message));
+						config.channel.sendFile.apply(config.channel, _formatMessage(event, message));
 					} else {
-						config.channel.sendMessage.apply(config.channel, formatMessage(event, message));
+						config.channel.sendMessage.apply(config.channel, _formatMessage(event, message));
 					}
 				});
 			});
 		});
 	}
 
-	function fillEvent(event) {
+	function _fillEvent(event) {
 		return bot.getFile(event.ImageUrl).then(function(data) {
 			event.image = new Buffer(data, 'binary');
 			return event;
@@ -121,7 +132,7 @@ module.exports = function(messaging, client) {
 		});
 	}
 
-	function formatMessage(event, message) {
+	function _formatMessage(event, message) {
 		var file = event.image;
 		var content = message.Message + '(' + event.Prop + ')';
 		if(file) {
@@ -130,14 +141,26 @@ module.exports = function(messaging, client) {
 		return [content];
 	}
 
+	messaging.addCommandHandler(/^!warframe:news/i, function(message, content) {
+		if(!messaging.isOfficer(message.member)) {
+			return false;
+		}
+		var region = (content[1] || '').substring(0, 2);
+		db.update(function(data) {
+			if(region) {
+				data.warframeEventBroadcasts[message.channel.id] = {'lang': region};
+				messaging.send(message, 'Channel subscribed to PC news in `' + region + '`');
+			} else {
+				delete data.warframeEventBroadcasts[message.channel.id];
+				messaging.send(message, 'Channel subscription removed');
+			}
+			updateBroadcasts();
+		});
+		return true;
+	});
+
 	client.on('ready', function() {
-		db.get().then(function(data) {
-			warframeEventBroadcasts = _.mapObject(data.warframeEventBroadcasts, function(config, id) {
-				config = _.clone(config);
-				config.channel = bot.getChannel(client, id);
-				return config;
-			});
-		})
+		updateBroadcasts()
 		.then(updateEvents)
 		.then(function() {
 			setInterval(updateEventsLoop, 30 * 1000);

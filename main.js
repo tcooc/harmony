@@ -31,7 +31,6 @@ client.on('ready', function() {
 	logger.info('Harmony activated');
 });
 
-// TODO turn client.users.get into fetchUser
 db.get().then(function(data) {
 	var settings = data.settings;
 	messaging = new Messaging(client, _.extend({}, settings));
