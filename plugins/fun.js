@@ -22,7 +22,7 @@ module.exports = function(messaging) {
 			readyData = bot.getFile('http://tinyurl.com/BodyisReady123');
 		}
 		readyData.then(function(data) {
-			message.channel.sendFile(new Buffer(data, 'binary'), 'ready.gif');
+			message.channel.sendFile(data, 'ready.gif');
 		});
 		return true;
 	});

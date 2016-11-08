@@ -48,24 +48,20 @@ function getRandomFood(foodUrl, randomFoods) {
 }
 
 module.exports = function(messaging) {
-	var randomFoods;
-	loadAllFoods(messaging.settings.foodUrl).then(function(foodsString) {
-		randomFoods = JSON.parse(/^\s*var randomSlugs = (.*);\s*$/.exec(foodsString)[1]);
+	var randomFoods = loadAllFoods(messaging.settings.foodUrl).then(function(foodsString) {
 		logger.debug('Food is ready');
+		return JSON.parse(/^\s*var randomSlugs = (.*);\s*$/.exec(foodsString)[1]);
 	});
 	messaging.addCommandHandler(/^!food/i, function(message) {
-		if(randomFoods) {
-			var fileName;
-			getRandomFood(messaging.settings.foodUrl, randomFoods)
-			.then(function(url) {
-				fileName = URL.parse(url).path.split('/').pop();
-				logger.debug('Random food', url, fileName);
-				return bot.getFile(url);
-			})
-			.then(function(data) {
-				message.channel.sendFile(new Buffer(data, 'binary'), fileName);
+		randomFoods.then(function(randomFoods) {
+			return getRandomFood(messaging.settings.foodUrl, randomFoods);
+		}).then(function(url) {
+			var fileName = URL.parse(url).path.split('/').pop();
+			logger.debug('Random food', url, fileName);
+			return bot.getFile(url).then(function(data) {
+				message.channel.sendFile(data, fileName);
 			});
-		}
+		});
 		return true;
 	});
 };

@@ -1,16 +1,10 @@
-var _ = require('underscore');
-var Promise = require('bluebird');
-var Discord = require('discord.js');
-var db = require('db');
-var logger = require('logger');
-var request = Promise.promisifyAll(require('request'));
+const _ = require('underscore');
+const Discord = require('discord.js');
+const db = require('db');
+const logger = require('logger');
+const CustomCommand = require('lib/CustomCommand');
 
-var GLOBAL_COM = '*';
-
-var COMMAND_REGEX = /([^{]*)({([^}]*)})|(.+)/g;
-var ARG_REGEX = /^[1-9][0-9]?$/;
-var USER_REGEX = /^user$/i;
-var API_REGEX = /^api (https?:\/\/[^ ]+)$/i;
+const GLOBAL_COM = '*';
 
 module.exports = function(messaging) {
 
@@ -124,101 +118,6 @@ module.exports = function(messaging) {
 				return id;
 			}
 		}
-	}
-
-	// custom commands are only usable in their respective servers
-	// ONLY characters in {...} blocks are given special treatment.
-	function CustomCommand(command, response) {
-		this.command = command.toLowerCase();
-		this.response = response;
-		this.builders = [];
-		var commandRegex = new RegExp(COMMAND_REGEX), match, innerMatch;
-		while(!!(match = commandRegex.exec(response))) {
-			logger.silly(match);
-			if(typeof match[1] === 'string') {
-				if(match[1]) {
-					this.builders.push(_rawStringBuilder(match[1]));
-				}
-				if(ARG_REGEX.test(match[3])) {
-					this.builders.push(_argBuilder(match[3]));
-				} else if(USER_REGEX.test(match[3])) {
-					this.builders.push(_userBuilder());
-				} else if(!!(innerMatch = API_REGEX.exec(match[3]))) {
-					this.builders.push(_apiBuilder(innerMatch));
-				} else {
-					this.builders.push(_rawStringBuilder(match[2]));
-				}
-			} else {
-				this.builders.push(_rawStringBuilder(match[4]));
-			}
-		}
-	}
-
-	CustomCommand.prototype.build = function(message, args) {
-		return Promise.all(_.map(this.builders, function(builder) {
-			return builder(message, args);
-		})).then(function(results) {
-			return results.join('');
-		});
-	};
-
-	CustomCommand.prototype.process = function(message) {
-		var args = message.content.split(' ');
-		if(args[0].toLowerCase() === this.command) {
-			// exec
-			this.build(message, args).then(function(response) {
-				messaging.send(message, response);
-			});
-			return true;
-		}
-		return false;
-	};
-
-	CustomCommand.prototype.toString = function() {
-		return this.command + ' ' + this.response;
-	};
-
-	// just send raw string data
-	function _rawStringBuilder(str) {
-		return function() {
-			return str;
-		};
-	}
-
-	// {1}, {2}, ...
-	function _argBuilder(n) {
-		n = +n;
-		return function(message, args) {
-			return args[n] || '';
-		};
-	}
-
-	// {user}
-	function _userBuilder() {
-		return function(message) {
-			return message.author.toString();
-		};
-	}
-
-	// {api [url]}
-	function _apiBuilder(api) {
-		return function() {
-			return request.getAsync(api[1]).then(function(res) {
-				if(res.statusCode !== 200) {
-					return 'Response status code not 200 (got ' + res.statusCode + ')';
-				}
-				if(res.headers['content-type'] !== 'text/plain') {
-					return 'Response must be in `text/plain`';
-				}
-				if(res.body.length > 2000) {
-					return 'Response length too large (max 2000)';
-				}
-				return res.body;
-			}, function(err) {
-				logger.warn(err);
-				return 'Invalid url ' + api[1];
-			});
-		};
 	}
 
 };

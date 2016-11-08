@@ -13,7 +13,7 @@ const commandSpecs = {
 	'/^!clear/i': false,
 	'/^!prefix/i': ['!prefix <prefix>',
 		'Set the required to activate me for your server. `!prefix @<me>` sets it to mentions, and `!prefix <none>` disables the prefix'],
-	'/^!invite/i': ['!invite <invite url>', 'Invite me to your server'],
+	'/^!invite/i': ['!invite [<invite url>]', 'Invite me to your server'],
 	'/^!food/i': ['!food', 'Stare at random images of food'],
 	'/^soon/i': ['soon', '(this command is a work in progress)'],
 	'/^!unflip/i': ['!unflip', 'Unflip your table'],
@@ -48,7 +48,9 @@ const commandSpecs = {
 	'/.*/': false,
 	'/^!commands?/i': ['!commands', 'Shows this message'],
 	'/^!feedback/i': ['!feedback', 'Send me feedback.'],
-	'/^(!|\\/)?(command)|(help)|(about)/i': false
+	'/^(!|\\/)?(command)|(help)|(about)/i': false,
+	'/^!avatar/i': false,
+	'/^!username/i': false
 };
 
 const aboutMessage = 'Hi, I\'m Harmony.\n' +

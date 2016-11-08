@@ -16,7 +16,7 @@ module.exports = function(messaging, client) {
 		audioManager.shuffle = true;
 
 		audioManager.eventBus.on('playing', function(playable) {
-			if(!playable.output) {
+			if(!playable.output || true) {
 				return;
 			}
 			if(playable.info) {
@@ -27,7 +27,7 @@ module.exports = function(messaging, client) {
 		});
 
 		audioManager.eventBus.on('stopping', function(playable) {
-			if(!playable.output) {
+			if(!playable.output || true) {
 				return;
 			}
 			if(playable.info) {

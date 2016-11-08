@@ -125,7 +125,7 @@ module.exports = function(messaging, client) {
 
 	function _fillEvent(event) {
 		return bot.getFile(event.ImageUrl).then(function(data) {
-			event.image = new Buffer(data, 'binary');
+			event.image = data;
 			return event;
 		}).catch(function() {
 			return event;
@@ -143,7 +143,7 @@ module.exports = function(messaging, client) {
 
 	messaging.addCommandHandler(/^!warframe:news/i, function(message, content) {
 		if(!messaging.isOfficer(message.member)) {
-			return false;
+			return;
 		}
 		var region = (content[1] || '').substring(0, 2);
 		db.update(function(data) {

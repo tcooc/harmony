@@ -1,6 +1,7 @@
 var Discord = require('discord.js');
 var Constants = require('discord.js/src/util/Constants');
 var logger = require('logger');
+const bot = require('lib/bot');
 
 module.exports = function(messaging, client) {
 	messaging.addCommandHandler(/^!prefix/i, function(message, content) {
@@ -17,6 +18,24 @@ module.exports = function(messaging, client) {
 			messaging.setPrefix(message, prefix);
 			messaging.send(message, 'Prefix for this server set to \'' + prefix + '\'');
 		}
+		return true;
+	});
+
+	messaging.addCommandHandler(/^!avatar/i, function(message, content) {
+		if(message.author.id !== messaging.settings.owner) {
+			return;
+		}
+		bot.getFile(content[1]).then(function(data) {
+			return client.user.setAvatar(data);
+		});
+		return true;
+	});
+
+	messaging.addCommandHandler(/^!username/i, function(message, content) {
+		if(message.author.id !== messaging.settings.owner) {
+			return;
+		}
+		client.user.setUsername(content[1]);
 		return true;
 	});
 
