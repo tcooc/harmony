@@ -1,10 +1,10 @@
-var _ = require('underscore');
-var htmlparser = require('htmlparser2');
-var logger = require('logger');
-var Promise = require('bluebird');
-var request = Promise.promisifyAll(require('request'));
-var URL = require('url');
-var bot = require('lib/bot');
+const _ = require('underscore');
+const htmlparser = require('htmlparser2');
+const logger = require('logger');
+const Promise = require('bluebird');
+const request = Promise.promisifyAll(require('request'));
+const URL = require('url');
+const bot = require('lib/bot');
 
 function loadAllFoods(foodUrl) {
 	return request.getAsync(foodUrl)

@@ -196,7 +196,7 @@ module.exports = function(messaging) {
 	// {user}
 	function _userBuilder() {
 		return function(message) {
-			return message.sender.toString();
+			return message.author.toString();
 		};
 	}
 

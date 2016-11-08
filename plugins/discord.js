@@ -24,18 +24,28 @@ module.exports = function(messaging, client) {
 		return client.rest.makeRequest('post', Constants.Endpoints.invite(invite.code), true);
 	}
 
+	function getAuthUrl(client_id) {
+		return 'https://discordapp.com/oauth2/authorize?client_id=' + client_id + '&scope=bot';
+	}
+
 	messaging.addCommandHandler(/^!invite/i, function(message, content) {
 		if(message.channel instanceof Discord.DMChannel) {
-			client.fetchInvite(content[1]).then(function(invite) {
-				return joinServer(invite);
-			}).then(function(invite) {
-				logger.debug(invite);
-				messaging.send(message, 'Joined ' + invite.guild.name + ' successfully');
-			}).catch(function(e) {
-				logger.debug(e);
-				messaging.send(message, 'Something is wrong with the invite url, please try again');
-			});
-			return true;
+			if(client.user.bot) {
+				messaging.send(message, 'Server owners/admins can invite me using ' + getAuthUrl(messaging.settings.discord.client_id));
+			} else {
+				client.fetchInvite(content[1]).then(function(invite) {
+					return joinServer(invite);
+				}).then(function(invite) {
+					logger.debug(invite);
+					messaging.send(message, 'Joined ' + invite.guild.name + ' successfully');
+				}).catch(function(e) {
+					logger.debug(e);
+					messaging.send(message, 'Something is wrong with the invite url, please try again');
+				});
+			}
+		} else {
+			messaging.send(message.author, 'Please invite using PM');
 		}
+		return true;
 	});
 };

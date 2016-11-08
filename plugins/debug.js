@@ -99,8 +99,8 @@ module.exports = function(messaging, client) {
 		if(message.author.id !== messaging.settings.owner) {
 			return;
 		}
-		var servers = client.servers.length;
-		var users = client.users.length;
+		var servers = client.guilds.size;
+		var users = client.users.size;
 		messaging.send(message, 'Connected to ' + servers + ' servers with a total of ' + users + ' users.');
 		return true;
 	});

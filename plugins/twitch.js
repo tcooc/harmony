@@ -68,7 +68,12 @@ module.exports = function(messaging, client) {
 		return request.getAsync(getStreamsUrl(client_id, Object.keys(channelWatchers)))
 		.then(function(response) {
 			logger.silly('getStreams', response.body);
-			return JSON.parse(response.body).streams;
+			if(response.headers['content-type'] !== 'application/json') {
+				logger.warn('getStreams returned invalid content type');
+				return [];
+			} else {
+				return JSON.parse(response.body).streams;
+			}
 		})
 		.catch(function(error) {
 			logger.error('getStreams error', error);
@@ -77,7 +82,6 @@ module.exports = function(messaging, client) {
 
 	function update() {
 		return getStreams().then(function(streams) {
-			logger.silly('streams', JSON.stringify(streams));
 			var streamsMap = {};
 			_.each(streams, function(stream) {
 				streamsMap[stream.channel.name] = stream;

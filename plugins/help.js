@@ -47,9 +47,8 @@ const commandSpecs = {
 	'/^!custom:list/i': ['!custom:list', 'List custom commands for server'],
 	'/.*/': false,
 	'/^!commands?/i': ['!commands', 'Shows this message'],
-	'/^!help/i': ['!help', 'Show this message'],
 	'/^!feedback/i': ['!feedback', 'Send me feedback.'],
-	'/^(!|\/)?(command)|(help)|(about)/i': false
+	'/^(!|\\/)?(command)|(help)|(about)/i': false
 };
 
 const aboutMessage = 'Hi, I\'m Harmony.\n' +
@@ -62,12 +61,6 @@ module.exports = function(messaging, client) {
 	var helpMessage;
 
 	messaging.addCommandHandler(/^!commands?/i, function(message) {
-		messaging.send(message.author, aboutMessage);
-		messaging.send(message.author, helpMessage);
-		return true;
-	});
-
-	messaging.addCommandHandler(/^!help/i, function(message) {
 		messaging.send(message.author, aboutMessage);
 		messaging.send(message.author, helpMessage);
 		return true;
