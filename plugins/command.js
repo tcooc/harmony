@@ -105,17 +105,17 @@ module.exports = function(messaging) {
 		return false;
 	});
 
+	// returns commands id if sender has permission to view/edit it
 	function getCommandsId(message, readonly) {
 		var isGlobal = message.channel instanceof Discord.DMChannel;
-		var isOwner = message.author.id === messaging.settings.owner || messaging.isOwner(message.author, message.guild);
-		var id = isGlobal ? GLOBAL_COM : message.guild.id;
+		var hasAuthority = messaging.hasAuthority(message);
 		if(isGlobal) {
-			if(isOwner) {
-				return id;
+			if(message.author.id === messaging.settings.owner) {
+				return GLOBAL_COM;
 			}
 		} else {
-			if(isOwner || readonly) {
-				return id;
+			if(hasAuthority || readonly) {
+				return message.guild.id;
 			}
 		}
 	}

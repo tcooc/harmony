@@ -10,49 +10,39 @@ var MINUTE = 60 * SECOND;
 
 module.exports = function(messaging, client) {
 	var twitterFollow = messaging.settings.twitterFollow;
-	var twitterBroadcasts;
 	var twitterClient = new Twit(messaging.settings.twitter);
 	var stream;
-	var broadcasts = [];
+	var broadcasts;
 
-	function parseBroadcastSpec(twitterBroadcast) {
-		var newBroadcast = {
-			for: twitterBroadcast.for,
-			channels: _.map(twitterBroadcast.channels, (id) => bot.getChannel(client, id)),
-			accept: new RegExp(twitterBroadcast.accept, 'i')
-		};
-		if(twitterBroadcast.for) {
-			var index = _.findIndex(broadcasts, function(broadcast) {
-				return twitterBroadcast.for === broadcast.for;
-			});
-			if(index >= 0) {
-				broadcasts[index] = newBroadcast;
-			} else {
-				broadcasts.push(newBroadcast);
-			}
-		} else {
-			broadcasts.push(newBroadcast);
-		}
+	function loadBroadcastSpec(twitterBroadcasts) {
+		broadcasts = twitterBroadcasts.map((twitterBroadcast) => {
+			return {
+				for: twitterBroadcast.for,
+				channel: bot.getChannel(client, twitterBroadcast.for),
+				accept: new RegExp(twitterBroadcast.accept, 'i')
+			};
+		});
 	}
 
-	function cleanup(channels, amount) {
-		var promise = Promise.resolve();
-		_.each(channels, function(channel) {
-			promise = promise.then(function() {
-				return channel.fetchMessages({limit: amount});
-			})
-			.then(function(messages) {
-				return messages.filter(function(message) {
-					return message.author.id === client.user.id;
-				});
-			})
-			.then(function(messages) {
-				return Promise.all(messages.map(function(message) {
-					return updateAlertMessage(message);
-				}));
+	function saveBroadcastSpec(broadcast) {
+		return {
+			for: broadcast.for,
+			accept: broadcast.accept.source
+		};
+	}
+
+	function cleanup(channel, amount) {
+		return channel.fetchMessages({limit: amount})
+		.then(function(messages) {
+			return messages.filter(function(message) {
+				return message.author.id === client.user.id;
 			});
+		})
+		.then(function(messages) {
+			return Promise.all(messages.map(function(message) {
+				return updateAlertMessage(message);
+			}));
 		});
-		return promise;
 	}
 
 	function doUpdateAlertMessage(message, timestamp, content) {
@@ -87,12 +77,8 @@ module.exports = function(messaging, client) {
 				var filteredText =  tweet.text.replace(' Informant ', ''); // pending regex fix
 				if(broadcast.accept.test(filteredText)) {
 					logger.debug('Tweet accepted by ' + broadcast.accept);
-					messaging.broadcast(broadcast.channels, tweet.text)
-					.then(function(results) {
-						logger.debug('Tweet broadcasted to ' + results.length);
-						_.each(results, function(message) {
-							updateAlertMessage(message);
-						});
+					messaging.send(broadcast.channel, tweet.text).then(function(message) {
+						return updateAlertMessage(message);
 					});
 				}
 			});
@@ -115,76 +101,65 @@ module.exports = function(messaging, client) {
 	}
 
 	db.get().then(function(data) {
-		twitterBroadcasts = data.twitterBroadcasts;
 		createStream();
-
 		client.on('ready', function() {
-			_.each(twitterBroadcasts, parseBroadcastSpec);
+			loadBroadcastSpec(data.twitterBroadcasts);
 			_.each(broadcasts, function(broadcast) {
-				cleanup(broadcast.channels, 100).catch(function(e) {
+				cleanup(broadcast.channel, 100).catch(function(e) {
 					logger.error(e);
 				});
 			});
 			logger.info('Twitter broadcasting ' + broadcasts.length + ' stream(s).');
 		});
-
 		logger.info('Twitter stream created.');
 	});
 
-	messaging.addCommandHandler(/^!alertme:info/i, function(message) {
-		var broadcast = twitterBroadcasts.find((broadcast) => broadcast.for === message.author.id);
-		if(broadcast) {
-			messaging.send(message.author, 'Your current watch list: `' + broadcast.accept.split('|').join(' ') + '`');
-		}
-		return true;
-	});
-
-	messaging.addCommandHandler(/^!alertme:stop/i, function(message) {
-		logger.debug('Broadcasts before remove: ' + broadcasts.length);
-		var index = _.findIndex(broadcasts, (broadcast) => broadcast.for === message.author.id);
-		if(index > -1) {
-			broadcasts.splice(index, 1);
-		}
-		index = _.findIndex(twitterBroadcasts, (broadcast) => broadcast.for === message.author.id);
-		if(index > -1) {
-			twitterBroadcasts.splice(index, 1);
-			db.update(function(data) {
-				data.twitterBroadcasts = twitterBroadcasts;
-			});
-		}
-		logger.debug('Broadcasts after remove: ' + broadcasts.length);
-		messaging.send(message.author, 'Alerts stopped.');
-		return true;
-	});
-
 	messaging.addCommandHandler(/^!alertme/i, function(message, content) {
+		if(!messaging.hasAuthority(message)) {
+			messaging.send(message.author, 'You don\'t seem to have permission to set alerts for that channel.\n' +
+				' Try the command here if you want personal alerts.');
+			return true;
+		}
 		var watchList = content.slice(1);
 		var correctList = _.all(watchList, function(watch) {
 			return /^[A-Za-z]+$/.test(watch);
 		});
+		var index = _.findIndex(broadcasts, (broadcast) => broadcast.for === message.channel.id || broadcast.for === message.author.id);
 		if(watchList.length === 0 || !correctList) {
-			return false;
+			var response = ['Subscribe to warframe alerts'];
+			if(index > -1) {
+				response.push('Your current watch list is: `' + broadcasts[index].accept.source.split('|').join(' ') + '`');
+			}
+			response.push('To set an alert, message me a comma separated list of items, like `!alertme Reactor Catalyst Forma Nitain`');
+			response.push('To stop getting alerts, message `!alertme stop`');
+			messaging.send(message, response.join('\n'));
+		} else if (watchList.length === 1 && watchList[0] === 'stop' && index > -1) {
+			broadcasts.splice(index, 1);
+			db.update(function(data) {
+				data.twitterBroadcasts.splice(index, 1);
+			});
+			messaging.send(message, 'Alerts stopped');
 		} else {
 			var pattern = watchList.join('|');
 			var twitterBroadcast = {
-				for: message.author.id,
-				channels: [message.author.id],
-				accept: pattern
+				for: message.channel.id,
+				channel: message.channel,
+				accept: new RegExp(pattern, 'i')
 			};
-			logger.info('Adding broadcast spec for ' + message.author.username, twitterBroadcast);
-			logger.debug('Broadcasts before add: ' + broadcasts.length);
-			var previous = _.findIndex(twitterBroadcasts, (broadcast) => broadcast.for === twitterBroadcast.for);
-			if(previous > -1) {
-				twitterBroadcasts[previous] = twitterBroadcast;
+			logger.info('Adding broadcast spec', twitterBroadcast);
+			if(index > -1) {
+				broadcasts[index] = twitterBroadcast;
 			} else {
-				twitterBroadcasts.push(twitterBroadcast);
+				broadcasts.push(twitterBroadcast);
 			}
 			db.update(function(data) {
-				data.twitterBroadcasts = twitterBroadcasts;
+				if(index > -1) {
+					data.twitterBroadcasts[index] = saveBroadcastSpec(twitterBroadcast);
+				} else {
+					data.twitterBroadcasts.push(saveBroadcastSpec(twitterBroadcast));
+				}
 			});
-			_.each(twitterBroadcasts, parseBroadcastSpec);
-			logger.debug('Broadcasts after add: ' + broadcasts.length);
-			messaging.send(message.author, 'Watching for `' + pattern.split('|').join(' ') + '`');
+			messaging.send(message, 'Watching for `' + pattern.split('|').join(' ') + '`');
 		}
 		return true;
 	});

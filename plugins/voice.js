@@ -67,7 +67,7 @@ module.exports = function(messaging, client) {
 		}).then(function(playables) {
 			if(playables.length > 1) {
 				messaging.send(message, 'Playlist added');
-			} else {
+			} else if(audioManager.queue.length > 0) {
 				messaging.send(message, 'Added to queue');
 			}
 		}, function(e) {

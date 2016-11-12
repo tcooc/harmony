@@ -1,11 +1,10 @@
-var Discord = require('discord.js');
-var Constants = require('discord.js/src/util/Constants');
-var logger = require('logger');
-const bot = require('lib/bot');
+const Discord = require('discord.js');
+const Constants = require('discord.js/src/util/Constants');
+const logger = require('logger');
 
 module.exports = function(messaging, client) {
 	messaging.addCommandHandler(/^!prefix/i, function(message, content) {
-		if(message.author.id !== messaging.settings.owner && !messaging.isOwner(message.author, message.channel.server)) {
+		if(!messaging.hasAuthority(message)) {
 			return;
 		}
 		if(content.length === 1) {
@@ -15,8 +14,9 @@ module.exports = function(messaging, client) {
 			if(prefix === '<none>') {
 				prefix = '';
 			}
-			messaging.setPrefix(message, prefix);
-			messaging.send(message, 'Prefix for this server set to \'' + prefix + '\'');
+			if(messaging.setPrefix(message, prefix)) {
+				messaging.send(message, 'Prefix for this server set to \'' + prefix + '\'');
+			}
 		}
 		return true;
 	});
@@ -25,9 +25,7 @@ module.exports = function(messaging, client) {
 		if(message.author.id !== messaging.settings.owner) {
 			return;
 		}
-		bot.getFile(content[1]).then(function(data) {
-			return client.user.setAvatar(data);
-		});
+		client.user.setAvatar(content[1]);
 		return true;
 	});
 

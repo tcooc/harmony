@@ -142,7 +142,7 @@ module.exports = function(messaging, client) {
 	}
 
 	messaging.addCommandHandler(/^!warframe:news/i, function(message, content) {
-		if(!messaging.isOfficer(message.member)) {
+		if(!messaging.hasAuthority(message)) {
 			return;
 		}
 		var region = (content[1] || '').substring(0, 2);

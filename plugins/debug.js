@@ -8,8 +8,10 @@ var logger = require('logger');
 module.exports = function(messaging, client) {
 	messaging.addHook(function(message) {
 		var content = message.content;
-		if(message.attachments && message.attachments[0]) {
-			content += ' (' + message.attachments[0].url + ')';
+		if(message.attachments.size) {
+			message.attachments.forEach((attachment) => {
+				content += ' (' + attachment.url + ')';
+			});
 		}
 		var info = [message.author.username + '(' + message.author.id + ')'];
 		if(message.guild) {
@@ -135,7 +137,7 @@ module.exports = function(messaging, client) {
 
 
 	messaging.addCommandHandler(/^!clear/i, function(message, content) {
-		if(message.author.id !== messaging.settings.owner && !messaging.isOwner(message.author, message.guild)) {
+		if(!messaging.hasAuthority(message)) {
 			return;
 		}
 		var type = content[1];

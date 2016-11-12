@@ -19,8 +19,6 @@ const commandSpecs = {
 	'/^!unflip/i': ['!unflip', 'Unflip your table'],
 	'/^!flip/i': ['!flip', 'Flip your table'],
 	'/^!ready/i': ['!ready', 'Ready your body'],
-	'/^!alertme:info/i': ['!alertme:info', 'Warframe: Show your alert notifications'],
-	'/^!alertme:stop/i': ['!alertme:stop', 'Warframe: Cancel your alert notifications'],
 	'/^!alertme/i': ['!alertme <space separated list of alert items>',
 		'Warframe: Personalized alert notifications. i.e. `!alertme Reactor Catalyst Forma Nitain`'],
 	'/^!trader/i': ['!trader', 'Warframe: Void trader info'],

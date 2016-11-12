@@ -53,7 +53,7 @@ module.exports = function(messaging, client) {
 	});
 
 	// each spec has stream and broadcast
-	function updateWatchers(specs) {
+	function loadWatchers(specs) {
 		channelWatchers = {};
 		_.each(specs, function(spec) {
 			if(!channelWatchers[spec.stream]) {
@@ -103,12 +103,34 @@ module.exports = function(messaging, client) {
 		});
 	}
 
+	messaging.addCommandHandler(/^!twitch/i, function(message, content) {
+		if(!messaging.hasAuthority(message)) {
+			return;
+		}
+		var username = content[1];
+		db.update(function(data) {
+			var index = data.twitch.findIndex((spec) => spec.broadcast === message.channel.id);
+			if(username) {
+				data.twitch[index] = {
+					stream: username,
+					broadcast: message.channel.id
+				};
+				messaging.send(message, 'Channel following Twitch stream `' + username + '`');
+			} else {
+				data.twitch.splice(index, 1);
+				messaging.send(message, 'Channel follow removed');
+			}
+			loadWatchers(data.twitch);
+		});
+		return true;
+	});
+
 	messaging.addCleanup(function() {
 		clearTimeout(timeout);
 	});
 
 	db.get().then(function(data) {
-		updateWatchers(data.twitch);
+		loadWatchers(data.twitch);
 		updateLoop();
 		logger.info('Twitch plugin started with spec.length=' + data.twitch.length);
 	});
