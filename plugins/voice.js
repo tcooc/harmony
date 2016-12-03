@@ -139,8 +139,10 @@ module.exports = function(messaging, client) {
 			return true;
 		}
 		audioManager.clear();
-		audioManager.voiceConnection.disconnect();
-		audioManager.voiceConnection = null;
+		if(audioManager.voiceConnection) {
+			audioManager.voiceConnection.disconnect();
+			audioManager.voiceConnection = null;
+		}
 		messaging.send(message, 'Leaving voice channel');
 		return true;
 	});
