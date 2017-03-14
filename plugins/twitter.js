@@ -63,7 +63,7 @@ module.exports = function(messaging, client) {
 	}
 
 	function updateAlertMessage(message) {
-		if(ALERT_TWEET_REGEX.test(message.content)) {
+		if(message.content && ALERT_TWEET_REGEX.test(message.content)) {
 			logger.debug('Twitter: updating message ' + message.content);
 			return doUpdateAlertMessage(message, message.editedTimestamp || message.createdTimestamp, message.content);
 		}

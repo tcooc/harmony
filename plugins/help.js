@@ -26,7 +26,6 @@ const commandSpecs = {
 	'/^!scans?/i': ['!scans', 'Warframe: Scan target info'],
 	'/^!sorties?/i': ['!sortie', 'Warframe: Sortie info'],
 	'/^!invasions?/i': ['!invasion', 'Warframe: List invasions and rewards'],
-	'/^!sheev/i': false,
 	'/^!wiki/i': ['!wiki', 'Warframe: Get wiki link for the specified topic. For example, `!wiki excalibur`'],
 	'/^!trialstats?/i': ['!trialstats', 'Warframe: Get links to trial stats'],
 	'/^!warframe:news/i': ['!warframe:news <lang>',
@@ -76,7 +75,7 @@ module.exports = function(messaging, client) {
 	});
 
 	messaging.addCommandHandler(/^!feedback/i, function(message) {
-		messaging.send(client.users.find('id', messaging.settings.owner),
+		messaging.send(client.users.get(messaging.settings.owner),
 			'Feedback: `' + message.content + '` from ' + message.author.username + '(' + message.author.id + ')');
 		messaging.send(message.author, 'Thank you for the feedback!');
 		return true;

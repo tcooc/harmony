@@ -28,7 +28,7 @@ module.exports = function(messaging, client) {
 
 	messaging.addPostHook(function(message, handled) {
 		if(!handled && message.channel instanceof Discord.DMChannel) {
-			messaging.send(client.users.find('id', messaging.settings.owner),
+			messaging.send(client.users.get(messaging.settings.owner),
 				'`' + message.content + '` from ' + message.author.username + '(' + message.author.id + ')');
 		}
 	});
@@ -75,7 +75,7 @@ module.exports = function(messaging, client) {
 		if(message.author.id !== messaging.settings.owner || content.length < 3) {
 			return;
 		}
-		var to = client.channels.find('id', content[1]);
+		var to = client.channels.get(content[1]);
 		var text = content.slice(2).join(' ');
 		if(to) {
 			logger.info('Sending ' + text + ' to ' + to.id);
@@ -88,7 +88,7 @@ module.exports = function(messaging, client) {
 		if(message.author.id !== messaging.settings.owner || content.length < 3) {
 			return;
 		}
-		var to = client.users.find('id', content[1]);
+		var to = client.users.get(content[1]);
 		var text = content.slice(2).join(' ');
 		if(to) {
 			logger.info('Sending ' + text + ' to ' + to.id);

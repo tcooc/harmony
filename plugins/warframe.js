@@ -42,14 +42,6 @@ module.exports = function(messaging, client) {
 		return true;
 	});
 
-	messaging.addCommandHandler(/^!sheev/i, function(message, content) {
-		var qs = encodeURIComponent(content.slice(1).join(' '));
-		bot.helpers.simpleGET('http://wf.tcooc.net/sheev/strats?q=' + qs).then(function(body) {
-			messaging.send(message, body);
-		});
-		return true;
-	});
-
 	messaging.addCommandHandler(/^!wiki/i, function(message, content) {
 		if(content.length > 1) {
 			// check if page exists, kinda
@@ -79,48 +71,57 @@ module.exports = function(messaging, client) {
 	// update local broadcast cache
 	function updateBroadcasts() {
 		return db.get().then(function(data) {
-			warframeEventBroadcasts = _.mapObject(data.warframeEventBroadcasts, function(config, id) {
+			warframeEventBroadcasts = {};
+			_.each(data.warframeEventBroadcasts, function(config, id) {
 				config = _.clone(config);
 				config.channel = bot.getChannel(client, id);
-				return config;
+				if(config.channel) {
+					warframeEventBroadcasts[id] = config;
+				}
 			});
 		});
 	}
 
-	function updateEvents() {
+	function fetchEvents() {
 		return bot.helpers.simpleGET('http://wf.tcooc.net/events.json').then(function(body) {
-			var events = JSON.parse(body);
-			return db.update(function(data) {
-				return _.filter(events, function(event) {
-					var isNew = !data.warframeEvents[event._id.$id];
-					data.warframeEvents[event._id.$id] = true;
-					return isNew;
-				});
+			return JSON.parse(body);
+		});
+	}
+
+	function updateEvents(events) {
+		var currentEvents = {};
+		_.each(events, (event)=>currentEvents[event._id.$oid] = true);
+		return db.update(function(data) {
+			// keep only new events
+			var newEvents = _.filter(events, (event)=>!data.warframeEvents[event._id.$oid]);
+			// cleanup events
+			data.warframeEvents = currentEvents;
+			return newEvents;
+		});
+	}
+
+	function broadcastNewEvents(newEvents) {
+		if(newEvents.length) {
+			logger.debug('new events', newEvents);
+		}
+		_.each(newEvents, function(event) {
+			_.each(warframeEventBroadcasts, function(config) {
+				var message = event.Messages.find((message) => message.LanguageCode === config.lang) || event.Messages[0];
+				logger.debug('sending', message);
+				if(event.image) {
+					config.channel.sendFile.apply(config.channel, _formatMessage(event, message));
+				} else {
+					config.channel.sendMessage.apply(config.channel, _formatMessage(event, message));
+				}
 			});
 		});
 	}
 
 	function updateEventsLoop() {
-		updateEvents()
-		.then(function(newEvents) {
-			return Promise.all(_.map(newEvents, _fillEvent));
-		})
-		.then(function(newEvents) {
-			if(newEvents.length) {
-				logger.debug('new events', newEvents);
-			}
-			_.each(newEvents, function(event) {
-				_.each(warframeEventBroadcasts, function(config) {
-					var message = event.Messages.find((message) => message.LanguageCode === config.lang) || event.Messages[0];
-					logger.debug('sending', message);
-					if(event.image) {
-						config.channel.sendFile.apply(config.channel, _formatMessage(event, message));
-					} else {
-						config.channel.sendMessage.apply(config.channel, _formatMessage(event, message));
-					}
-				});
-			});
-		});
+		fetchEvents()
+		.then((events)=>updateEvents(events))
+		.then((newEvents)=>Promise.all(_.map(newEvents, _fillEvent)))
+		.then((newEvents)=>broadcastNewEvents(newEvents));
 	}
 
 	function _fillEvent(event) {
@@ -161,7 +162,6 @@ module.exports = function(messaging, client) {
 
 	client.on('ready', function() {
 		updateBroadcasts()
-		.then(updateEvents)
 		.then(function() {
 			setInterval(updateEventsLoop, 30 * 1000);
 		});

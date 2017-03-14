@@ -4,4 +4,4 @@ const plugins = [
 	'd3', 'debug', 'discord', 'food', 'fun', 'twitch', 'twitter', 'warframe', 'voice', 'command', 'help'
 ].map((name) => 'plugins/' + name);
 
-startup(plugins, (settings) => [settings.email, settings.password]);
+startup(plugins, (settings) => [settings.discord.token]);

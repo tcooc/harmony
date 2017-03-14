@@ -83,6 +83,7 @@ module.exports = function(messaging) {
 	});
 
 	messaging.addCommandHandler(/.*/, function(message, args) {
+		logger.silly('processing', message.content, args);
 		var promise, id, ids;
 		if(args.length) {
 			ids = [GLOBAL_COM];

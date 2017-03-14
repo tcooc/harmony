@@ -5,7 +5,9 @@ const db = require('db');
 const Messaging = require('lib/Messaging');
 
 function startup(plugins, login) {
-	var client = new Discord.Client();
+	var client = new Discord.Client({
+		disabledEvents: ['TYPING_START']
+	});
 	var messaging;
 
 	client.on('message', function(message) {

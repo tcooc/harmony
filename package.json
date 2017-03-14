@@ -3,7 +3,8 @@
   "dependencies": {
     "app-module-path": "^1.0.4",
     "bluebird": "^3.0.5",
-    "discord.js": "^10.0.1",
+    "discord.js": "^11.0.0",
+    "erlpack": "github:hammerandchisel/erlpack#master",
     "htmlparser2": "^3.9.0",
     "jdb": "github:tcooc/jdb",
     "node-opus": "^0.2.2",
