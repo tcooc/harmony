@@ -117,6 +117,9 @@ module.exports = function(messaging) {
 					.map((id) => commandCache[id])
 					.reduce((memo, value) => memo.concat(_.toArray(value)), [])
 					.find((command) => command.process(message)).value();
+			}).catch(function(e) {
+				logger.error(e.stack);
+				messaging.send(message, 'Error with command');
 			});
 		}
 		return false;
