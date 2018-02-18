@@ -82,6 +82,22 @@ module.exports = function(messaging) {
 		return true;
 	});
 
+	messaging.addCommandHandler(/^!custom:source/i, function(message, args) {
+		var id = getCommandsId(message, true);
+		if(id) {
+			var commands = commandCache[id] || {};
+			var command = commands[args[1]];
+			if(command) {
+				messaging.send(message, 'The source for ' + command.command + ' is: `' + command.response + '`');
+			} else {
+				messaging.send(message, 'That command doesn\'t exist');
+			}
+		} else {
+			messaging.send(message, 'Use this command in a server to see command source');
+		}
+		return true;
+	});
+
 	messaging.addCommandHandler(/.*/, function(message, args) {
 		logger.silly('processing', message.content, args);
 		var promise, id, ids;

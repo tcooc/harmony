@@ -39,6 +39,7 @@ const commandSpecs = {
 		'Special syntax allows for {<number>} to print arguments, {user} to print sender, and {api <url>} to make an API request'],
 	'/^!custom:remove/i': ['!custom:remove <command>', 'Custom Commands', 'Remove command from server'],
 	'/^!custom:list/i': ['!custom:list', 'Custom Commands', 'List custom commands for server'],
+	'/^!custom:source/i': ['!custom:source <command>', 'Custom Commands', 'See command source for command'],
 	'/.*/': false,
 	'/^!commands?/i': ['!commands', 'Core', 'Shows this message'],
 	'/^!feedback/i': ['!feedback', 'Core', 'Send me feedback.'],
