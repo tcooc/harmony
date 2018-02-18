@@ -1,47 +1,15 @@
 var _ = require('underscore');
 var Promise = require('bluebird');
 var request = Promise.promisifyAll(require('request'));
+var RichEmbed = require('discord.js').RichEmbed;
 
 var bot = require('lib/bot');
 var logger = require('logger');
 var db = require('db');
 
+var NEWS_INTERVAL = 30 * 1000;
+
 module.exports = function(messaging, client) {
-	messaging.addCommandHandler(/^!trader/i, function(message) {
-		bot.helpers.simpleGET('http://wf.tcooc.net/trader').then(function(body) {
-			messaging.send(message, body);
-		});
-		return true;
-	});
-
-	messaging.addCommandHandler(/^!deals?/i, function(message) {
-		bot.helpers.simpleGET('http://wf.tcooc.net/deal').then(function(body) {
-			messaging.send(message, body);
-		});
-		return true;
-	});
-
-	messaging.addCommandHandler(/^!scans?/i, function(message) {
-		bot.helpers.simpleGET('http://wf.tcooc.net/scan').then(function(body) {
-			messaging.send(message, body);
-		});
-		return true;
-	});
-
-	messaging.addCommandHandler(/^!sorties?/i, function(message) {
-		bot.helpers.simpleGET('http://wf.tcooc.net/sortie').then(function(body) {
-			messaging.send(message, body);
-		});
-		return true;
-	});
-
-	messaging.addCommandHandler(/^!invasions?/i, function(message) {
-		bot.helpers.simpleGET('http://wf.tcooc.net/invasion').then(function(body) {
-			messaging.send(message, body);
-		});
-		return true;
-	});
-
 	messaging.addCommandHandler(/^!wiki/i, function(message, content) {
 		if(content.length > 1) {
 			// check if page exists, kinda
@@ -59,9 +27,15 @@ module.exports = function(messaging, client) {
 		}
 	});
 
-	messaging.addCommandHandler(/^!trialstats?/i, function(message) {
-		messaging.send(message,
-			'Hek: http://tinyurl.com/qb752oj Nightmare: http://tinyurl.com/p8og6xf Jordas: http://tinyurl.com/prpebzh');
+	messaging.addCommandHandler(/^!price/i, function(message, content) {
+		if(content.length > 1) {
+			var query = encodeURIComponent(content.slice(1).join(' '));
+			bot.helpers.simpleGET('http://wf.tcooc.net/market?q=' + query).then(function(body) {
+				messaging.send(message, body);
+			});
+		} else {
+			messaging.send(message, 'Specify an item');
+		}
 		return true;
 	});
 
@@ -108,11 +82,8 @@ module.exports = function(messaging, client) {
 			_.each(warframeEventBroadcasts, function(config) {
 				var message = event.Messages.find((message) => message.LanguageCode === config.lang) || event.Messages[0];
 				logger.debug('sending', message);
-				if(event.image) {
-					config.channel.sendFile.apply(config.channel, _formatMessage(event, message));
-				} else {
-					config.channel.sendMessage.apply(config.channel, _formatMessage(event, message));
-				}
+				var embed = _createEmbed(event, message);
+				config.channel.send('', embed);
 			});
 		});
 	}
@@ -120,27 +91,33 @@ module.exports = function(messaging, client) {
 	function updateEventsLoop() {
 		fetchEvents()
 		.then((events)=>updateEvents(events))
-		.then((newEvents)=>Promise.all(_.map(newEvents, _fillEvent)))
 		.then((newEvents)=>broadcastNewEvents(newEvents));
 	}
 
-	function _fillEvent(event) {
-		return bot.getFile(event.ImageUrl).then(function(data) {
-			event.image = data;
-			return event;
-		}).catch(function() {
-			return event;
-		});
+	function _createEmbed(event, message) {
+		var embed = new RichEmbed();
+		embed.setTitle(message.Message);
+		embed.setURL(event.Prop);
+		embed.setTimestamp(new Date(+event.Date.$date.$numberLong));
+		if(event.ImageUrl) {
+			embed.setImage(event.ImageUrl);
+		}
+		return embed;
 	}
 
-	function _formatMessage(event, message) {
-		var file = event.image;
-		var content = message.Message + '(' + event.Prop + ')';
-		if(file) {
-			return [file, event.ImageUrl.split('/').pop(), content];
+	messaging.addCommandHandler(/^!warframe:newstest/i, function(message) {
+		if(!messaging.isBotAdmin(message.author)) {
+			return;
 		}
-		return [content];
-	}
+		fetchEvents().then(function(events) {
+			_.each(events, function(event) {
+				var msg = event.Messages.find((message) => message.LanguageCode === 'en') || event.Messages[0];
+				var embed = _createEmbed(event, msg);
+				message.channel.send('', embed);
+			});
+		});
+		return true;
+	});
 
 	messaging.addCommandHandler(/^!warframe:news/i, function(message, content) {
 		if(!messaging.hasAuthority(message)) {
@@ -163,7 +140,7 @@ module.exports = function(messaging, client) {
 	client.on('ready', function() {
 		updateBroadcasts()
 		.then(function() {
-			setInterval(updateEventsLoop, 30 * 1000);
+			setInterval(updateEventsLoop, NEWS_INTERVAL);
 		});
 	});
 };

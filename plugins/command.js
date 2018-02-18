@@ -111,7 +111,7 @@ module.exports = function(messaging) {
 		var isGlobal = message.channel instanceof Discord.DMChannel;
 		var hasAuthority = messaging.hasAuthority(message);
 		if(isGlobal) {
-			if(message.author.id === messaging.settings.owner) {
+			if(messaging.isBotAdmin(message.author)) {
 				return GLOBAL_COM;
 			}
 		} else {

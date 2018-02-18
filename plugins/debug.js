@@ -34,7 +34,7 @@ module.exports = function(messaging, client) {
 	});
 
 	messaging.addCommandHandler(/^!eval/i, function(message, content) {
-		if(message.author.id !== messaging.settings.owner || content.length <= 1) {
+		if(!messaging.isBotAdmin(message.author) || content.length <= 1) {
 			return;
 		}
 		logger.debug('eval', content);
@@ -72,7 +72,7 @@ module.exports = function(messaging, client) {
 	});
 
 	messaging.addCommandHandler(/^!message:channel/i, function(message, content) {
-		if(message.author.id !== messaging.settings.owner || content.length < 3) {
+		if(!messaging.isBotAdmin(message.author) || content.length < 3) {
 			return;
 		}
 		var to = client.channels.get(content[1]);
@@ -85,7 +85,7 @@ module.exports = function(messaging, client) {
 	});
 
 	messaging.addCommandHandler(/^!message:user/i, function(message, content) {
-		if(message.author.id !== messaging.settings.owner || content.length < 3) {
+		if(!messaging.isBotAdmin(message.author) || content.length < 3) {
 			return;
 		}
 		var to = client.users.get(content[1]);
@@ -98,7 +98,7 @@ module.exports = function(messaging, client) {
 	});
 
 	messaging.addCommandHandler(/^!stats/i, function(message) {
-		if(message.author.id !== messaging.settings.owner) {
+		if(!messaging.isBotAdmin(message.author)) {
 			return;
 		}
 		var servers = client.guilds.size;
@@ -108,7 +108,7 @@ module.exports = function(messaging, client) {
 	});
 
 	messaging.addCommandHandler(/^!reload/i, function(message) {
-		if(message.author.id !== messaging.settings.owner) {
+		if(!messaging.isBotAdmin(message.author)) {
 			return;
 		}
 		logger.info('Triggering reload');
@@ -119,7 +119,7 @@ module.exports = function(messaging, client) {
 	});
 
 	messaging.addCommandHandler(/^!loglevel/i, function(message, content) {
-		if(message.author.id !== messaging.settings.owner) {
+		if(!messaging.isBotAdmin(message.author)) {
 			return;
 		}
 		var level = content[1];

@@ -68,8 +68,8 @@ module.exports = function(messaging, client) {
 		return request.getAsync(getStreamsUrl(client_id, Object.keys(channelWatchers)))
 		.then(function(response) {
 			logger.silly('getStreams', response.body);
-			if(response.headers['content-type'] !== 'application/json') {
-				logger.warn('getStreams returned invalid content type');
+			if(response.headers['content-type'] && !response.headers['content-type'].startsWith('application/json')) {
+				logger.warn('getStreams returned invalid content type, ' + response.headers['content-type']);
 				return [];
 			} else {
 				return JSON.parse(response.body).streams;
@@ -110,6 +110,9 @@ module.exports = function(messaging, client) {
 		var username = content[1];
 		db.update(function(data) {
 			var index = data.twitch.findIndex((spec) => spec.broadcast === message.channel.id);
+			if(index === -1) {
+				index = data.twitch.length;
+			}
 			if(username) {
 				data.twitch[index] = {
 					stream: username,

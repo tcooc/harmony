@@ -1,58 +1,69 @@
 const Discord = require('discord.js');
 const logger = require('logger');
 
+const commandTopicOrder = ['Core', 'Warframe', 'Custom Commands', 'Audio', 'Other'];
+
 const commandSpecs = {
-	'/^!d3gem/i': ['!d3gem <gemlevel>', 'Diablo 3: Show helpful info on levelling legendary gems'],
+	'/^!d3gem/i': ['!d3gem <gemlevel>', 'Other', 'Diablo 3: Show helpful info on levelling legendary gems'],
 	'/^!eval/i': false,
-	'/^!run/i': ['!run <code>', 'Run some quick javascript code'],
+	'/^!run/i': ['!run <code>', 'Other', 'Run some quick javascript code'],
 	'/^!message:channel/i': false,
 	'/^!message:user/i': false,
 	'/^!stats/i': false,
 	'/^!reload/i': false,
 	'/^!loglevel/i': false,
 	'/^!clear/i': false,
-	'/^!prefix/i': ['!prefix <prefix>',
+	'/^!prefix/i': ['!prefix <prefix>', 'Core',
 		'Set the required to activate me for your server. `!prefix @<me>` sets it to mentions, and `!prefix <none>` disables the prefix'],
-	'/^!invite/i': ['!invite [<invite url>]', 'Invite me to your server'],
-	'/^!food/i': ['!food', 'Stare at random images of food'],
-	'/^soon/i': ['soon', '(this command is a work in progress)'],
-	'/^!unflip/i': ['!unflip', 'Unflip your table'],
-	'/^!flip/i': ['!flip', 'Flip your table'],
-	'/^!ready/i': ['!ready', 'Ready your body'],
-	'/^!alertme/i': ['!alertme <space separated list of alert items>',
-		'Warframe: Personalized alert notifications. i.e. `!alertme Reactor Catalyst Forma Nitain`'],
-	'/^!trader/i': ['!trader', 'Warframe: Void trader info'],
-	'/^!deals?/i': ['!deals', 'Warframe: Darvo deals'],
-	'/^!scans?/i': ['!scans', 'Warframe: Scan target info'],
-	'/^!sorties?/i': ['!sortie', 'Warframe: Sortie info'],
-	'/^!invasions?/i': ['!invasion', 'Warframe: List invasions and rewards'],
-	'/^!wiki/i': ['!wiki', 'Warframe: Get wiki link for the specified topic. For example, `!wiki excalibur`'],
-	'/^!trialstats?/i': ['!trialstats', 'Warframe: Get links to trial stats'],
-	'/^!warframe:news/i': ['!warframe:news <lang>',
-		'Warframe: Subscribe to PC news. `!warframe:news en` for English news. `!warframe:news` to cancel notifications'],
-	'/^!audio:play/i': false,
-	'/^!audio:loop/i': false,
-	'/^!audio:next/i': false,
-	'/^!audio:remove/i': false,
-	'/^!audio:clear/i': false,
-	'/^!audio:leave/i': false,
+	'/^!invite/i': ['!invite', 'Core', 'Invite me to your server'],
+	'/^!food/i': ['!food', 'Other', 'Stare at random images of food'],
+	'/^soon/i': ['soon', 'Other', '(this command is a work in progress)'],
+	'/^!unflip/i': ['!unflip', 'Other', 'Unflip your table'],
+	'/^!flip/i': ['!flip', 'Other', 'Flip your table'],
+	'/^!alertme/i': ['!alertme <space separated list of alert items>', 'Warframe',
+		'Personalized alert notifications. i.e. `!alertme Reactor Catalyst Forma Nitain`'],
+	'/^!wiki/i': ['!wiki', 'Warframe', 'Get wiki link for the specified topic. For example, `!wiki excalibur`'],
+	'/^!warframe:news/i': ['!warframe:news <lang>', 'Warframe',
+		'Subscribe to PC news. `!warframe:news en` for English news. `!warframe:news` to cancel notifications'],
+	'/^!audio:play/i': ['!audio:play <link>', 'Audio',
+		'Play YouTube video/playlist or Twitch stream. The bot will automatically join your current voice channel. ' +
+		'If the bot is already playing something it will add your link to the queue.'],
+	'/^!audio:loop/i': ['!audio:loop <loop(yes/no)> <shuffle(yes/no)>', 'Audio', 'Set looping and shuffling'],
+	'/^!audio:next/i': ['!audio:next', 'Audio', 'Skip currently playing'],
+	'/^!audio:remove/i': ['!audio:remove <link>', 'Audio', 'Remove link from queue'],
+	'/^!audio:clear/i': ['!audio:clear', 'Audio', 'Clear playlist and currently playing'],
+	'/^!audio:leave/i': ['!audio:leave', 'Audio', 'Bot will leave voice channel'],
 	'/^!shodan/i': false,
-	'/^!custom:add/i': ['!custom:add <command> <message>',
+	'/^!custom:add/i': ['!custom:add <command> <message>', 'Custom Commands',
 		'Add command from server.' +
 		'Special syntax allows for {<number>} to print arguments, {user} to print sender, and {api <url>} to make an API request'],
-	'/^!custom:remove/i': ['!custom:remove <command>', 'Remove command from server'],
-	'/^!custom:list/i': ['!custom:list', 'List custom commands for server'],
+	'/^!custom:remove/i': ['!custom:remove <command>', 'Custom Commands', 'Remove command from server'],
+	'/^!custom:list/i': ['!custom:list', 'Custom Commands', 'List custom commands for server'],
 	'/.*/': false,
-	'/^!commands?/i': ['!commands', 'Shows this message'],
-	'/^!feedback/i': ['!feedback', 'Send me feedback.'],
+	'/^!commands?/i': ['!commands', 'Core', 'Shows this message'],
+	'/^!feedback/i': ['!feedback', 'Core', 'Send me feedback.'],
 	'/^(!|\\/)?(command)|(help)|(about)/i': false,
 	'/^!avatar/i': false,
-	'/^!username/i': false
+	'/^!username/i': false,
+	'/^!mcstatus/i': ['!mcstatus <server>', 'Other', 'Minecraft: Check server status'],
+	'/^!price/i': ['!price <item name>', 'Warframe', 'Price check'],
+	'/^!twitch/i': ['!twitch <twitch username>', 'Announce when user is streaming']
 };
+
+const customCommandSpecs = [
+	['!trader', 'Warframe', 'Void trader info'],
+	['!void',  'Warframe', 'Void fissure status'],
+	['!cetus', 'Warframe', 'Cetus time and bounty rotations'],
+	['!deal', 'Warframe', 'Darvo deals'],
+	['!scan', 'Warframe' , 'Scan target info'],
+	['!sortie', 'Warframe', 'Sortie info'],
+	['!invasion', 'Warframe', 'List invasions and rewards'],
+	['!trialstat', 'Warframe', 'Get links to trial stats']
+];
 
 const aboutMessage = 'Hi, I\'m Harmony.\n' +
 	'I am a bot created by `tcooc` for Warframe related matters.\n' +
-	'`!invite <invite url>` to invite me to your server.\n' +
+	'`!invite` to invite me to your server.\n' +
 	'`!commands` to see what I can do.\n' +
 	'Source code is at https://github.com/tcooc/harmony. Feel free to use `!feedback` to send me feedback.';
 
@@ -89,15 +100,32 @@ module.exports = function(messaging, client) {
 
 	client.on('ready', function() {
 		var commands = messaging.handlers.map((handler) => handler.regex.toString());
-		commands.sort();
+		var allSpecs = [];
+		var topics = {};
 		var message = [];
+		// aggregate command specs
+		allSpecs = allSpecs.concat(customCommandSpecs);
 		commands.forEach(function(command) {
 			var spec = commandSpecs[command];
 			if(spec) {
-				message.push('**' + spec[0] + '** - ' + spec[1]);
+				allSpecs.push(spec);
 			} else if(spec !== false) {
 				logger.warn('Help spec not found for command ' + command);
 			}
+		});
+		// sort into topics
+		allSpecs.forEach((spec) => {
+			if(!topics[spec[1]]) {
+				topics[spec[1]] = [];
+			}
+			topics[spec[1]].push(spec[0] + ' - ' + spec[2]);
+		});
+		// combine
+		commandTopicOrder.forEach((topicName) => {
+			var topic = topics[topicName];
+			topic.sort();
+			message.push('**' + topicName + '**');
+			message = message.concat(topic);
 		});
 		helpMessage = message.join('\n');
 	});

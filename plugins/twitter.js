@@ -63,7 +63,7 @@ module.exports = function(messaging, client) {
 	}
 
 	function updateAlertMessage(message) {
-		if(message.content && ALERT_TWEET_REGEX.test(message.content)) {
+		if(message && message.content && ALERT_TWEET_REGEX.test(message.content)) {
 			logger.debug('Twitter: updating message ' + message.content);
 			return doUpdateAlertMessage(message, message.editedTimestamp || message.createdTimestamp, message.content);
 		}
@@ -105,6 +105,9 @@ module.exports = function(messaging, client) {
 		client.on('ready', function() {
 			loadBroadcastSpec(data.twitterBroadcasts);
 			_.each(broadcasts, function(broadcast) {
+				if(!broadcast.channel) {
+					return;
+				}
 				cleanup(broadcast.channel, 100).catch(function(e) {
 					logger.error(e);
 				});

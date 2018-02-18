@@ -5,6 +5,7 @@ const Promise = require('bluebird');
 const request = Promise.promisifyAll(require('request'));
 const URL = require('url');
 const bot = require('lib/bot');
+var Discord = require('discord.js');
 
 function loadAllFoods(foodUrl) {
 	return request.getAsync(foodUrl)
@@ -59,7 +60,7 @@ module.exports = function(messaging) {
 			var fileName = URL.parse(url).path.split('/').pop();
 			logger.debug('Random food', url, fileName);
 			return bot.getFile(url).then(function(data) {
-				message.channel.sendFile(data, fileName);
+				message.channel.send('', new Discord.Attachment(data, fileName));
 			});
 		});
 		return true;

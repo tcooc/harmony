@@ -1,4 +1,5 @@
 {
 	"validateIndentation": "\t",
-	"validateQuoteMarks": "'"
+	"validateQuoteMarks": "'",
+	"disallowTrailingWhitespace": true
 }

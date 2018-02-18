@@ -83,8 +83,8 @@ module.exports = function(messaging, client) {
 			messaging.send(message, 'Audio player not found');
 			return true;
 		}
-		var loop = content[1] ? !!parseInt(content[1]) : audioManager.loop;
-		var shuffle = content[2] ? !!parseInt(content[2]) : audioManager.shuffle;
+		var loop = content[1] ? content[1] === 'yes' : audioManager.loop;
+		var shuffle = content[2] ? content[2] === 'yes': audioManager.shuffle;
 		audioManager.setLooping(loop, shuffle);
 		messaging.send(message, 'Looping ' + (audioManager.loop ? 'enabled' : 'disabled') +
 			', shuffle ' + (audioManager.shuffle ? 'enabled' : 'disabled'));
@@ -150,7 +150,7 @@ module.exports = function(messaging, client) {
 	var audioclips = new AudioClips('./.audio').load();
 
 	messaging.addCommandHandler(/^!shodan/i, function(message, content) {
-		if(message.author.id !== messaging.settings.owner) {
+		if(!messaging.isBotAdmin(message.author)) {
 			return;
 		}
 		var audioManager = getOrCreateAudioManager(message.guild);
@@ -171,7 +171,7 @@ module.exports = function(messaging, client) {
 			promise = Promise.resolve();
 		}
 		promise.then(() => audioclips).then(function(audioclips) {
-			var index = audioclips.files.findIndex((file) => file.indexOf(content[1]) > -1); 
+			var index = audioclips.files.findIndex((file) => file.indexOf(content[1]) > -1);
 			if(index === -1) {
 				index = Math.floor(Math.random() * audioclips.files.length);
 			}
