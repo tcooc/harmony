@@ -58,8 +58,7 @@ const customCommandSpecs = [
 	['!deal', 'Warframe', 'Darvo deals'],
 	['!scan', 'Warframe' , 'Scan target info'],
 	['!sortie', 'Warframe', 'Sortie info'],
-	['!invasion', 'Warframe', 'List invasions and rewards'],
-	['!trialstat', 'Warframe', 'Get links to trial stats']
+	['!invasion', 'Warframe', 'List invasions and rewards']
 ];
 
 const aboutMessage = 'Hi, I\'m Harmony.\n' +
@@ -69,18 +68,18 @@ const aboutMessage = 'Hi, I\'m Harmony.\n' +
 	'Source code is at https://github.com/tcooc/harmony. Feel free to use `!feedback` to send me feedback.';
 
 module.exports = function(messaging, client) {
-	var helpMessage;
+	var helpMessages = [];
 
 	messaging.addCommandHandler(/^!commands?/i, function(message) {
 		messaging.send(message.author, aboutMessage);
-		messaging.send(message.author, helpMessage);
+		helpMessages.forEach((helpMsg)=>messaging.send(message.author, helpMsg));
 		return true;
 	});
 
-	messaging.addCommandHandler(/^(!|\/)?(command)|(help)|(about)/i, function(message) {
+	messaging.addCommandHandler(/^(!|\/)?(commands?)|(help)|(about)/i, function(message) {
 		if(message.channel instanceof Discord.DMChannel) {
 			messaging.send(message.author, aboutMessage);
-			messaging.send(message.author, helpMessage);
+			helpMessages.forEach((helpMsg)=>messaging.send(message.author, helpMsg));
 			return true;
 		}
 		return false;
@@ -104,6 +103,8 @@ module.exports = function(messaging, client) {
 		var allSpecs = [];
 		var topics = {};
 		var message = [];
+		var helpMessage;
+		var first = 0, last;
 		// aggregate command specs
 		allSpecs = allSpecs.concat(customCommandSpecs);
 		commands.forEach(function(command) {
@@ -129,5 +130,13 @@ module.exports = function(messaging, client) {
 			message = message.concat(topic);
 		});
 		helpMessage = message.join('\n');
+		// limit to 2000 characters per message
+		while(helpMessage.length - first > 2000) {
+			// assume the message has newlines every 2000 characters or less
+			last = helpMessage.lastIndexOf('\n', first + 2000);
+			helpMessages.push(helpMessage.substring(first, last));
+			first = last;
+		}
+		helpMessages.push(helpMessage.substring(first));
 	});
 };

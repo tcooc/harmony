@@ -1,8 +1,6 @@
 const _ = require('underscore');
 const Discord = require('discord.js');
 const AudioManager = require('lib/audio/AudioManager');
-const AudioClips = require('lib/audio/AudioClips');
-const FilePlayable = require('lib/audio/FilePlayable');
 const logger = require('logger');
 
 module.exports = function(messaging, client) {
@@ -39,7 +37,7 @@ module.exports = function(messaging, client) {
 		return audioManager;
 	}
 
-	function getOrCreateAudioManager(guild) {
+	var getOrCreateAudioManager = function(guild) {
 		if(!guild) {
 			return null;
 		}
@@ -47,7 +45,7 @@ module.exports = function(messaging, client) {
 			audioManagers[guild.id] = createAudioManager();
 		}
 		return audioManagers[guild.id];
-	}
+	};
 
 	messaging.addCommandHandler(/^!audio:play/i, function(message, content) {
 		var userVoiceChannel = client.channels.find((channel) => {
@@ -147,50 +145,11 @@ module.exports = function(messaging, client) {
 		return true;
 	});
 
-	var audioclips = new AudioClips('./.audio').load();
-
-	messaging.addCommandHandler(/^!shodan/i, function(message, content) {
-		if(!messaging.isBotAdmin(message.author)) {
-			return;
-		}
-		var audioManager = getOrCreateAudioManager(message.guild);
-		if(!audioManager) {
-			messaging.send(message, 'Audio player not found');
-			return true;
-		}
-		var promise;
-		if(!audioManager.voiceConnection) {
-			var userVoiceChannel = client.channels.find((channel) => {
-				return channel instanceof Discord.VoiceChannel && channel.members.find((member) => member.id === message.author.id);
-			});
-			if(!userVoiceChannel) {
-				return true;
-			}
-			promise = audioManager.join(userVoiceChannel);
-		} else {
-			promise = Promise.resolve();
-		}
-		promise.then(() => audioclips).then(function(audioclips) {
-			var index = audioclips.files.findIndex((file) => file.indexOf(content[1]) > -1);
-			if(index === -1) {
-				index = Math.floor(Math.random() * audioclips.files.length);
-			}
-			var filePlayable = new FilePlayable(audioclips.files[index], message.channel);
-			filePlayable.disabled = true;
-			filePlayable.options = {volume: 1};
-			audioManager.queue.unshift(filePlayable);
-			audioManager.stop();
-			audioManager.start();
-		});
-	});
-
 	client.on('ready', function() {
 		if(!client.user.bot) {
 			// user it not bot, must use single manager
 			var audioManager = createAudioManager();
-			getOrCreateAudioManager = function() {
-				return audioManager;
-			};
+			getOrCreateAudioManager = () => audioManager;
 		}
 	});
 };

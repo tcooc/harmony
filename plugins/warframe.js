@@ -80,7 +80,10 @@ module.exports = function(messaging, client) {
 		}
 		_.each(newEvents, function(event) {
 			_.each(warframeEventBroadcasts, function(config) {
-				var message = event.Messages.find((message) => message.LanguageCode === config.lang) || event.Messages[0];
+				var message = event.Messages.find((message) => message.LanguageCode === config.lang);
+				if(!message) {
+					return;
+				}
 				logger.debug('sending', message);
 				var embed = _createEmbed(event, message);
 				config.channel.send('', embed);
