@@ -27,6 +27,7 @@ function startup(plugins, login) {
 
 	client.on('ready', function() {
 		logger.info('Harmony activated');
+		client.user.setActivity('!commands [active]');
 	});
 
 	db.get().then(function(data) {

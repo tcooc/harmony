@@ -77,6 +77,10 @@ module.exports = function(messaging, client) {
 				var filteredText =  tweet.text.replace(' Informant ', ''); // pending regex fix
 				if(broadcast.accept.test(filteredText)) {
 					logger.debug('Tweet accepted by ' + broadcast.accept);
+					if(!broadcast.channel) {
+						logger.error('Channel does not exist', broadcast.for);
+						return;
+					}
 					messaging.send(broadcast.channel, tweet.text).then(function(message) {
 						return updateAlertMessage(message);
 					});

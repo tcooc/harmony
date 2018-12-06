@@ -30,8 +30,8 @@ module.exports = function(messaging, client) {
 	messaging.addCommandHandler(/^!price/i, function(message, content) {
 		if(content.length > 1) {
 			var query = encodeURIComponent(content.slice(1).join(' '));
-			bot.helpers.simpleGET('http://wf.tcooc.net/market?q=' + query).then(function(body) {
-				messaging.send(message, body);
+			bot.getResponse('https://wf.tcooc.net/market?q=' + query).then(function(response) {
+				messaging.send(message, response.body.toString());
 			});
 		} else {
 			messaging.send(message, 'Specify an item');
@@ -57,8 +57,8 @@ module.exports = function(messaging, client) {
 	}
 
 	function fetchEvents() {
-		return bot.helpers.simpleGET('http://wf.tcooc.net/events.json').then(function(body) {
-			return JSON.parse(body);
+		return bot.getResponse('https://wf.tcooc.net/events.json').then(function(response) {
+			return JSON.parse(response.body.toString());
 		});
 	}
 
@@ -140,10 +140,58 @@ module.exports = function(messaging, client) {
 		return true;
 	});
 
+	// enemy data
+	var enemyData = {};
+	function enemyDataMain(send) {
+		return bot.getResponse('https://wf.tcooc.net/enemy').then(response => processEnemyData(response.body.toString(), send));
+	}
+
+	function processEnemyData(responseData, send) {
+		var enemies = responseData.split('\n');
+		for(var i = 0; i < enemies.length; i++) {
+			var enemy = enemies[i].split(', ');
+			var name = enemy[1];
+			var data = {
+				level: enemy[0],
+				found: enemy[2] === 'true',
+				health: (enemy[3] * 100).toFixed(2),
+				mission: enemy[4],
+				region: enemy[5]
+			};enemyData[name] = enemyData[name] || data;
+
+			var channel = client.channels.get('101715629001687040');
+			var trailer = ' (' + data.health + '%)';
+			if(send && data.mission !== enemyData[name].mission) {
+				channel.send(name + ' was found in ' + data.mission + ', ' + data.region + trailer);
+			} else if(send && data.found && !enemyData[name].found) {
+				channel.send(name + ' was detected in ' + data.region + trailer);
+			}
+			if(send && !data.found && enemyData[name].found) {
+				channel.send(name + ' went back into hiding' + trailer);
+			}
+
+			enemyData[name] = data;
+		}
+	}
+
 	client.on('ready', function() {
-		updateBroadcasts()
-		.then(function() {
-			setInterval(updateEventsLoop, NEWS_INTERVAL);
+		var updateEventsInterval, enemyDataInterval;
+		updateBroadcasts().then(function() {
+			updateEventsInterval = setInterval(updateEventsLoop, NEWS_INTERVAL);
+		});
+
+		enemyDataMain(false).then(function() {
+			if(Object.keys(enemyData)) {
+				logger.debug('Starting enemy locator');
+				enemyDataInterval = setInterval(enemyDataMain.bind(null, true), 10 * 1000);
+			} else {
+				logger.debug('No enemy data found, disabling enemy locator');
+			}
+		});
+
+		messaging.addCleanup(() => {
+			clearInterval(updateEventsInterval);
+			clearInterval(enemyDataInterval);
 		});
 	});
 };
