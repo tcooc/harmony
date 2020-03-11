@@ -13,6 +13,6 @@ const plugins = [
   'voice',
   'command',
   'help'
-].map(name => 'plugins/' + name);
+].map(name => './plugins/' + name);
 
 startup(plugins);
