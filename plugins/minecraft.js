@@ -1,6 +1,6 @@
 const url = require('url');
 const spawn = require('child_process').spawn;
-const logger = require('./logger');
+const logger = require('../logger');
 
 module.exports = function(messaging) {
   messaging.addCommandHandler(/^!mcstatus/i, function(message, content) {

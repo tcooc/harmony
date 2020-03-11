@@ -1,6 +1,6 @@
 const _ = require('underscore');
 const htmlparser = require('htmlparser2');
-const logger = require('./logger');
+const logger = require('../logger');
 const Promise = require('bluebird');
 const request = Promise.promisifyAll(require('request'));
 const URL = require('url');

@@ -1,4 +1,3 @@
-require('app-module-path').addPath(__dirname);
 const startup = require('./startup');
 const plugins = [
   'd3',
