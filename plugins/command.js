@@ -11,7 +11,7 @@ module.exports = function(messaging) {
 
   function refreshCache(id, data, force) {
     if (force || !commandCache[id]) {
-      logger.debug('refreshing command cache for ' + id);
+      logger.silly('refreshing command cache for ' + id);
       var commands = data.customCommands[id];
       commandCache[id] = _.mapObject(commands, function(response, name) {
         return new CustomCommand(name, response);
