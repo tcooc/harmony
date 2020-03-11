@@ -177,6 +177,7 @@ module.exports = function(messaging, client) {
 	client.on('ready', function() {
 		var updateEventsInterval, enemyDataInterval;
 		updateBroadcasts().then(function() {
+			updateEventsLoop();
 			updateEventsInterval = setInterval(updateEventsLoop, NEWS_INTERVAL);
 		});
 

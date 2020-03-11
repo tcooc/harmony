@@ -5,13 +5,18 @@ var Promise = require('bluebird');
 var request = Promise.promisifyAll(require('request'));
 var db = require('db');
 
-var STREAMS_URL = 'https://api.twitch.tv/kraken/streams';
+var STREAMS_URL = 'https://api.twitch.tv/helix/streams';
 
-function getStreamsUrl(clientid, channel) {
+function getStreamsRequest(clientid, channel) {
 	if(Array.isArray(channel)) {
 		channel = channel.join(',');
 	}
-	return STREAMS_URL + '?client_id=' + encodeURIComponent(clientid) + '&channel=' + encodeURIComponent(channel);
+	return {
+		url: STREAMS_URL + '?user_login=' + encodeURIComponent(channel),
+		headers: {
+			'Client-ID': clientid
+		}
+	};
 }
 
 module.exports = function(messaging, client) {
@@ -29,12 +34,12 @@ module.exports = function(messaging, client) {
 	var eventBus = new events.EventEmitter();
 
 	eventBus.on('update', function(name, stream) {
-		var streaming = !!stream;
+		var streaming = stream && stream.type === 'live';
 		if(streaming) {
-			if(channelsStatus[name] && channelsStatus[name] !== stream.created_at) {
+			if(channelsStatus[name] && channelsStatus[name] !== stream.started_at) {
 				eventBus.emit('statusChanged', name, stream, streaming);
 			}
-			channelsStatus[name] = stream.created_at;
+			channelsStatus[name] = stream.started_at;
 		} else {
 			channelsStatus[name] = channelsStatus[name] || true;
 		}
@@ -45,8 +50,8 @@ module.exports = function(messaging, client) {
 			var watchers = channelWatchers[name];
 			_.each(watchers, function(watcher) {
 				var channel = client.channels.get(watcher);
-				logger.info('Stream started: ' + stream.channel.display_name + ' ' + stream.game);
-				messaging.send(channel, '**' + stream.channel.display_name + '** is now streaming ' + (stream.game ? stream.game : '') +
+				logger.info('Stream started: ' + stream.user_name + ' ' + stream.game);
+				messaging.send(channel, '**' + stream.user_name + '** is now streaming ' + stream.title +
 					' @ https://www.twitch.tv/' + name);
 			});
 		}
@@ -65,14 +70,14 @@ module.exports = function(messaging, client) {
 	}
 
 	function getStreams() {
-		return request.getAsync(getStreamsUrl(client_id, Object.keys(channelWatchers)))
+		return request.getAsync(getStreamsRequest(client_id, Object.keys(channelWatchers)))
 		.then(function(response) {
 			logger.silly('getStreams', response.body);
 			if(response.headers['content-type'] && !response.headers['content-type'].startsWith('application/json')) {
 				logger.warn('getStreams returned invalid content type, ' + response.headers['content-type']);
 				return [];
 			} else {
-				return JSON.parse(response.body).streams;
+				return JSON.parse(response.body).data;
 			}
 		})
 		.catch(function(error) {
@@ -84,7 +89,7 @@ module.exports = function(messaging, client) {
 		return getStreams().then(function(streams) {
 			var streamsMap = {};
 			_.each(streams, function(stream) {
-				streamsMap[stream.channel.name] = stream;
+				streamsMap[stream.user_name.toLowerCase()] = stream;
 			});
 			_.each(channelWatchers, function(broadcast, name) {
 				if(!streamsMap[name]) {
@@ -94,6 +99,8 @@ module.exports = function(messaging, client) {
 			_.each(streamsMap, function(stream, name) {
 				eventBus.emit('update', name, stream);
 			});
+			logger.silly('streamsMap', streamsMap);
+			logger.silly('channelsStatus', channelsStatus);
 		});
 	}
 
@@ -115,7 +122,7 @@ module.exports = function(messaging, client) {
 			}
 			if(username) {
 				data.twitch[index] = {
-					stream: username,
+					stream: username.toLowerCase(),
 					broadcast: message.channel.id
 				};
 				messaging.send(message, 'Channel following Twitch stream `' + username + '`');
