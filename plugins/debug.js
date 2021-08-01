@@ -137,19 +137,20 @@ module.exports = function(messaging, client) {
     return true;
   });
 
+  const validLevels = ['info', 'debug', 'silly'];
   messaging.addCommandHandler(/^!loglevel/i, function(message, content) {
     if (!messaging.isBotAdmin(message.author)) {
       return;
     }
     var level = content[1];
-    if (content[1] && ['info', 'debug', 'silly'].indexOf(content[1]) > -1) {
+    if (content[1] && validLevels.includes(content[1])) {
       db.update(function(data) {
         data.settings.logLevel = level;
       });
       logger.transports.console.level = level;
       messaging.send(message, 'Log level set to `' + level + '`');
     } else {
-      messaging.send(message, 'Invalid log level');
+      messaging.send(message, 'Invalid log level. Possible values: ' + validLevels);
     }
     return true;
   });
