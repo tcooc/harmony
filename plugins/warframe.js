@@ -8,15 +8,15 @@ var db = require('../db');
 
 var NEWS_INTERVAL = 30 * 1000;
 
-module.exports = function(messaging, client) {
-  messaging.addCommandHandler(/^!wiki/i, function(message, content) {
+module.exports = function (messaging, client) {
+  messaging.addCommandHandler(/^!wiki/i, function (message, content) {
     if (content.length > 1) {
       // check if page exists, kinda
       var url = 'https://warframe.wikia.com/wiki/';
-      url += _.map(content.slice(1), function(n) {
+      url += _.map(content.slice(1), function (n) {
         return n[0].toUpperCase() + n.substring(1);
       }).join('_');
-      request.headAsync(url).then(function(response) {
+      request.headAsync(url).then(function (response) {
         if (response.statusCode !== 200) {
           return;
         }
@@ -26,12 +26,12 @@ module.exports = function(messaging, client) {
     }
   });
 
-  messaging.addCommandHandler(/^!price/i, function(message, content) {
+  messaging.addCommandHandler(/^!price/i, function (message, content) {
     if (content.length > 1) {
       var query = encodeURIComponent(content.slice(1).join(' '));
       bot
         .getResponse('https://wf.tcooc.net/market?q=' + query)
-        .then(function(response) {
+        .then(function (response) {
           messaging.send(message, response.body.toString());
         });
     } else {
@@ -45,9 +45,9 @@ module.exports = function(messaging, client) {
 
   // update local broadcast cache
   function updateBroadcasts() {
-    return db.get().then(function(data) {
+    return db.get().then(function (data) {
       warframeEventBroadcasts = {};
-      _.each(data.warframeEventBroadcasts, function(config, id) {
+      _.each(data.warframeEventBroadcasts, function (config, id) {
         config = _.clone(config);
         config.channel = bot.getChannel(client, id);
         if (config.channel) {
@@ -60,19 +60,19 @@ module.exports = function(messaging, client) {
   function fetchEvents() {
     return bot
       .getResponse('https://wf.tcooc.net/events.json')
-      .then(function(response) {
+      .then(function (response) {
         return JSON.parse(response.body.toString());
       });
   }
 
   function updateEvents(events) {
     var currentEvents = {};
-    _.each(events, event => (currentEvents[event._id.$oid] = true));
-    return db.update(function(data) {
+    _.each(events, (event) => (currentEvents[event._id.$oid] = true));
+    return db.update(function (data) {
       // keep only new events
       var newEvents = _.filter(
         events,
-        event => !data.warframeEvents[event._id.$oid]
+        (event) => !data.warframeEvents[event._id.$oid]
       );
       // cleanup events
       data.warframeEvents = currentEvents;
@@ -84,10 +84,10 @@ module.exports = function(messaging, client) {
     if (newEvents.length) {
       logger.debug('new events', newEvents);
     }
-    _.each(newEvents, function(event) {
-      _.each(warframeEventBroadcasts, function(config) {
+    _.each(newEvents, function (event) {
+      _.each(warframeEventBroadcasts, function (config) {
         var message = event.Messages.find(
-          message => message.LanguageCode === config.lang
+          (message) => message.LanguageCode === config.lang
         );
         if (!message) {
           return;
@@ -101,8 +101,8 @@ module.exports = function(messaging, client) {
 
   function updateEventsLoop() {
     fetchEvents()
-      .then(events => updateEvents(events))
-      .then(newEvents => broadcastNewEvents(newEvents));
+      .then((events) => updateEvents(events))
+      .then((newEvents) => broadcastNewEvents(newEvents));
   }
 
   function _createEmbed(event, message) {
@@ -116,14 +116,14 @@ module.exports = function(messaging, client) {
     return embed;
   }
 
-  messaging.addCommandHandler(/^!warframe:newstest/i, function(message) {
+  messaging.addCommandHandler(/^!warframe:newstest/i, function (message) {
     if (!messaging.isBotAdmin(message.author)) {
       return;
     }
-    fetchEvents().then(function(events) {
-      _.each(events, function(event) {
+    fetchEvents().then(function (events) {
+      _.each(events, function (event) {
         var msg =
-          event.Messages.find(message => message.LanguageCode === 'en') ||
+          event.Messages.find((message) => message.LanguageCode === 'en') ||
           event.Messages[0];
         var embed = _createEmbed(event, msg);
         message.channel.send('', embed);
@@ -132,12 +132,12 @@ module.exports = function(messaging, client) {
     return true;
   });
 
-  messaging.addCommandHandler(/^!warframe:news/i, function(message, content) {
+  messaging.addCommandHandler(/^!warframe:news/i, function (message, content) {
     if (!messaging.hasAuthority(message)) {
       return;
     }
     var region = (content[1] || '').substring(0, 2);
-    db.update(function(data) {
+    db.update(function (data) {
       if (region) {
         data.warframeEventBroadcasts[message.channel.id] = { lang: region };
         messaging.send(
@@ -158,7 +158,7 @@ module.exports = function(messaging, client) {
   function enemyDataMain(send) {
     return bot
       .getResponse('https://wf.tcooc.net/enemy')
-      .then(response => processEnemyData(response.body.toString(), send));
+      .then((response) => processEnemyData(response.body.toString(), send));
   }
 
   function processEnemyData(responseData, send) {
@@ -192,14 +192,14 @@ module.exports = function(messaging, client) {
     }
   }
 
-  client.on('ready', function() {
+  client.on('ready', function () {
     var updateEventsInterval, enemyDataInterval;
-    updateBroadcasts().then(function() {
+    updateBroadcasts().then(function () {
       updateEventsLoop();
       updateEventsInterval = setInterval(updateEventsLoop, NEWS_INTERVAL);
     });
 
-    enemyDataMain(false).then(function() {
+    enemyDataMain(false).then(function () {
       if (Object.keys(enemyData)) {
         logger.debug('Starting enemy locator');
         enemyDataInterval = setInterval(

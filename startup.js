@@ -1,64 +1,97 @@
-const _ = require('underscore');
-const { Client } = require('discord.js');
-const logger = require('./logger');
-const db = require('./db');
-const Messaging = require('./lib/Messaging');
+const { Client, Collection, Events, GatewayIntentBits } = require('discord.js');
+const { logger } = require('./logger');
+const { db } = require('./db');
 
-function startup(plugins) {
-  var client = new Client({
-    disabledEvents: ['TYPING_START']
+const startup = async (plugins) => {
+  const client = new Client({
+    intents: [GatewayIntentBits.Guilds]
   });
-  var messaging;
+  const commands = new Collection();
+  const cleanups = [];
 
-  client.on('message', function(message) {
-    if (message.author.id === client.user.id || message.author.bot) {
+  client.on(Events.InteractionCreate, async (interaction) => {
+    logger.silly(
+      interaction,
+      interaction.isChatInputCommand(),
+      interaction.commandName,
+      interaction.channelId,
+      interaction.member,
+      interaction.user,
+      interaction.memberPermissions
+    );
+    const command = commands.get(interaction.commandName);
+
+    if (!command) {
+      logger.error(`No command matching ${interaction.commandName} was found.`);
       return;
     }
-    messaging.process(message);
+
+    try {
+      await command.execute(interaction);
+    } catch (error) {
+      logger.error(error);
+      if (interaction.replied || interaction.deferred) {
+        await interaction.followUp({
+          content: 'There was an error while executing this command!',
+          ephemeral: true
+        });
+      } else {
+        await interaction.reply({
+          content: 'There was an error while executing this command!',
+          ephemeral: true
+        });
+      }
+    }
   });
 
-  client.on('disconnected', function() {
-    throw new Error('disconnected');
+  client.on(Events.ClientReady, (client) => {
+    logger.info(`${client.user.tag} activated`);
+    logger.info(
+      `Connected to ${client.guilds.cache.size} servers with a total of ${client.users.cache.size} users.`
+    );
+    client.user.setActivity('[active]');
   });
 
-  client.on('error', function(error) {
-    throw error;
-  });
-
-  client.on('ready', function() {
-    logger.info('Harmony activated');
-    client.user.setActivity('!commands [active]');
-  });
-
-  db.get().then(function(data) {
-    var settings = data.settings;
-    messaging = new Messaging(client, _.extend({}, settings));
-    logger.transports.console.level = settings.logLevel;
-    plugins
-      .map(plugin => require(plugin))
-      .forEach(function(plugin) {
-        messaging.addPlugin(plugin);
+  const { settings } = await db.get();
+  logger.level = settings.logLevel;
+  for (let i = 0; i < plugins.length; i++) {
+    const plugin = require(plugins[i]);
+    if (plugin.startup) {
+      await plugin.startup(client);
+    }
+    if (plugin.cleanup) {
+      cleanups.push(plugin.cleanup);
+    }
+    if (plugin.commands) {
+      plugin.commands.forEach((command) => {
+        commands.set(command.data.name, command);
       });
-    client.login(settings.discord.token);
-  });
-
-  function shutdown() {
-    logger.info('Shutting down');
-    messaging.stop();
-    db.release();
-    client.destroy();
-    setTimeout(function() {
-      process.exit(0);
-    }, 1000);
+    }
   }
 
+  const shutdown = () => {
+    logger.info('Shutting down');
+    db.release();
+    client.destroy();
+    cleanups.forEach((cleanup) => cleanup());
+  };
+
   process.on('unhandledRejection', (reason, p) => {
-    logger.error('Unhandled Rejection at: Promise', p, 'reason:', reason);
+    logger.error(
+      'Unhandled Rejection at: Promise',
+      p,
+      'reason:',
+      reason,
+      'stack:',
+      reason.stack
+    );
   });
+
   process.on('SIGINT', shutdown);
   process.on('SIGTERM', shutdown);
 
-  return messaging;
-}
+  client.login(settings.discord.token);
+  return client;
+};
 
-module.exports = startup;
+module.exports = { startup };

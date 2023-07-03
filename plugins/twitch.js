@@ -1,188 +1,215 @@
-var _ = require("underscore");
-var events = require("events");
-var logger = require("../logger");
-var Promise = require("bluebird");
-var request = Promise.promisifyAll(require("request"));
-var db = require("../db");
+var _ = require('underscore');
+var { EventEmitter } = require('events');
+const { hasAuthority } = require('../lib/Messaging');
+var { logger } = require('../logger');
+var { db } = require('../db');
+const { SlashCommandBuilder } = require('discord.js');
 
-function getStreamsRequest(clientid, token, channel) {
-  if (Array.isArray(channel)) {
-    channel = channel.join(",");
+let client;
+let client_id;
+let secret;
+let token;
+// map of stream->broadcast specs
+let channelWatchers = {};
+// channel status values: false, true, timestamp
+// if false, means that status hasn't been initiated
+// if true, means that status has been initiated, and stream was offline
+// if timestamp, means that status has been initiated, and stream was online
+const channelsStatus = {};
+
+let timeout;
+let tokenTimeout;
+
+const eventBus = new EventEmitter();
+
+eventBus.on('update', (name, stream) => {
+  const streaming = stream && stream.type === 'live';
+  if (streaming) {
+    if (channelsStatus[name] && channelsStatus[name] !== stream.started_at) {
+      eventBus.emit('statusChanged', name, stream, streaming);
+    }
+    channelsStatus[name] = stream.started_at;
+  } else {
+    channelsStatus[name] = channelsStatus[name] || true;
   }
-  return {
-    url: `https://api.twitch.tv/helix/streams?user_login=${encodeURIComponent(
-      channel
-    )}`,
-    headers: {
-      Authorization: "Bearer " + token,
-      "Client-ID": clientid,
-    },
-  };
+});
+
+eventBus.on('statusChanged', (name, stream, streaming) => {
+  if (streaming) {
+    logger.info('Stream started: ' + stream.user_name + ' ' + stream.game);
+    const watchers = channelWatchers[name];
+    _.each(watchers, async (watcher) => {
+      const channel = await client.channels.fetch(watcher);
+      const url = `https://www.twitch.tv/${stream.user_login}`;
+      const thumbnail = stream.thumbnail_url
+        .replace('{width}', 128 * 10)
+        .replace('{height}', 72 * 10);
+      channel.send({
+        content: `${stream.user_name} is now streaming ${stream.game_name} at ${url}`,
+        embeds: [
+          {
+            title: stream.title,
+            url,
+            image: { url: thumbnail }
+          }
+        ]
+      });
+    });
+  }
+});
+
+// each spec has stream and broadcast
+function loadWatchers(specs) {
+  channelWatchers = {};
+  _.each(specs, function (spec) {
+    if (!channelWatchers[spec.stream]) {
+      channelWatchers[spec.stream] = [];
+    }
+    channelWatchers[spec.stream].push(spec.broadcast);
+    channelsStatus[spec.stream] = channelsStatus[spec.stream] || false;
+  });
 }
 
-module.exports = function (messaging, client) {
-  var client_id = messaging.settings.twitch.client_id;
-  var secret = messaging.settings.twitch.client_secret;
-  var token = null;
-  // map of stream->broadcast specs
-  var channelWatchers;
-  // channel status values: false, true, timestamp
-  // if false, means that status hasn't been initiated
-  // if true, means that status has been initiated, and stream was offline
-  // if timestamp, means that status has been initiated, and stream was online
-  var channelsStatus = {};
+const getStreams = async () => {
+  if (!Object.keys(channelWatchers).length) {
+    return;
+  }
+  if (!token) {
+    const response = await fetch('https://id.twitch.tv/oauth2/token', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/x-www-form-urlencoded'
+      },
+      body: `client_id=${client_id}&client_secret=${secret}&grant_type=client_credentials`
+    });
+    if (response.status >= 400) {
+      throw new Error(
+        `get token responded with status ${
+          response.status
+        } body ${await response.text()}`
+      );
+    }
+    token = await response.json();
+    logger.silly('token', token);
+    tokenTimeout = setTimeout(() => {
+      token = null;
+    }, token.expires_in);
+  }
 
-  var timeout;
-
-  var eventBus = new events.EventEmitter();
-
-  eventBus.on("update", function (name, stream) {
-    var streaming = stream && stream.type === "live";
-    if (streaming) {
-      if (channelsStatus[name] && channelsStatus[name] !== stream.started_at) {
-        eventBus.emit("statusChanged", name, stream, streaming);
+  try {
+    const response = await fetch(
+      `https://api.twitch.tv/helix/streams?user_login=${encodeURIComponent(
+        Object.keys(channelWatchers).join(',')
+      )}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token.access_token}`,
+          'Client-ID': client_id
+        }
       }
-      channelsStatus[name] = stream.started_at;
+    );
+    if (response.status >= 400) {
+      throw new Error(
+        `get streams responded with status ${
+          response.status
+        } body ${await response.text()}`
+      );
+    }
+    if (!response.headers.get('content-type').startsWith('application/json')) {
+      logger.warn(
+        `getStreams returned invalid content type ${response.headers.get(
+          'content-type'
+        )}`
+      );
+      return [];
     } else {
-      channelsStatus[name] = channelsStatus[name] || true;
+      const body = await response.json();
+      logger.silly('getStreams', body);
+      return body.data;
     }
-  });
-
-  eventBus.on("statusChanged", function (name, stream, streaming) {
-    if (streaming) {
-      var watchers = channelWatchers[name];
-      _.each(watchers, function (watcher) {
-        var channel = client.channels.get(watcher);
-        logger.info("Stream started: " + stream.user_name + " " + stream.game);
-        messaging.send(
-          channel,
-          "**" +
-            stream.user_name +
-            "** is now streaming " +
-            stream.title +
-            " @ https://www.twitch.tv/" +
-            name
-        );
-      });
-    }
-  });
-
-  // each spec has stream and broadcast
-  function loadWatchers(specs) {
-    channelWatchers = {};
-    _.each(specs, function (spec) {
-      if (!channelWatchers[spec.stream]) {
-        channelWatchers[spec.stream] = [];
-      }
-      channelWatchers[spec.stream].push(spec.broadcast);
-      channelsStatus[spec.stream] = channelsStatus[spec.stream] || false;
-    });
+  } catch (e) {
+    logger.error('getStreams error', e);
   }
+};
 
-  async function getStreams() {
-    if (!token) {
-      const body = (
-        await request.postAsync({
-          url: `https://id.twitch.tv/oauth2/token?client_id=${client_id}&client_secret=${secret}&grant_type=client_credentials`,
-        })
-      ).body;
-      logger.silly("token", body);
-      token = JSON.parse(body);
-      setTimeout(() => {
-        token = null;
-      }, token.expires_in);
-    }
-
-    return request
-      .getAsync(
-        getStreamsRequest(
-          client_id,
-          token.access_token,
-          Object.keys(channelWatchers)
-        )
-      )
-      .then(function (response) {
-        logger.silly("getStreams", response.body);
-        if (
-          response.headers["content-type"] &&
-          !response.headers["content-type"].startsWith("application/json")
-        ) {
-          logger.warn(
-            "getStreams returned invalid content type, " +
-              response.headers["content-type"]
-          );
-          return [];
-        } else {
-          return JSON.parse(response.body).data;
-        }
-      })
-      .catch(function (error) {
-        logger.error("getStreams error", error);
-      });
-  }
-
-  function update() {
-    return getStreams().then(function (streams) {
-      var streamsMap = {};
-      _.each(streams, function (stream) {
-        streamsMap[stream.user_name.toLowerCase()] = stream;
-      });
-      _.each(channelWatchers, function (broadcast, name) {
-        if (!streamsMap[name]) {
-          streamsMap[name] = null;
-        }
-      });
-      _.each(streamsMap, function (stream, name) {
-        eventBus.emit("update", name, stream);
-      });
-      logger.silly("streamsMap", streamsMap);
-      logger.silly("channelsStatus", channelsStatus);
-    });
-  }
-
-  function updateLoop() {
-    update().finally(function () {
-      timeout = setTimeout(updateLoop, 30 * 1000);
-    });
-  }
-
-  messaging.addCommandHandler(/^!twitch/i, function (message, content) {
-    if (!messaging.hasAuthority(message)) {
+const command = {
+  data: new SlashCommandBuilder()
+    .setName('twitch')
+    .setDescription('Create or clear twitch notifications in this channel')
+    .addStringOption((option) =>
+      option.setName('channel').setDescription('Twitch channel id')
+    ),
+  execute: async (interaction) => {
+    if (!hasAuthority(interaction)) {
+      interaction.reply('Must be server admin');
       return;
     }
-    var username = content[1];
-    db.update(function (data) {
-      var index = data.twitch.findIndex(
-        (spec) => spec.broadcast === message.channel.id
+    const channel = interaction.options.getString('channel');
+    db.update((data) => {
+      let index = data.twitch.findIndex(
+        (spec) => spec.broadcast === interaction.channelId
       );
       if (index === -1) {
         index = data.twitch.length;
       }
-      if (username) {
+      if (channel) {
         data.twitch[index] = {
-          stream: username.toLowerCase(),
-          broadcast: message.channel.id,
+          stream: channel.toLowerCase(),
+          broadcast: interaction.channelId
         };
-        messaging.send(
-          message,
-          "Channel following Twitch stream `" + username + "`"
-        );
+        interaction.reply(`Channel following Twitch stream \`${channel}\``);
       } else {
         data.twitch.splice(index, 1);
-        messaging.send(message, "Channel follow removed");
+        interaction.reply('Channel follow removed');
       }
       loadWatchers(data.twitch);
     });
-    return true;
-  });
+  }
+};
 
-  messaging.addCleanup(function () {
-    clearTimeout(timeout);
+const update = async () => {
+  const streams = await getStreams();
+  const streamsMap = {};
+  _.each(streams, (stream) => {
+    streamsMap[stream.user_name.toLowerCase()] = stream;
   });
+  _.each(channelWatchers, (_, name) => {
+    if (!streamsMap[name]) {
+      streamsMap[name] = null;
+    }
+  });
+  _.each(streamsMap, (stream, name) => {
+    eventBus.emit('update', name, stream);
+  });
+  logger.silly('streamsMap', streamsMap);
+  logger.silly('channelsStatus', channelsStatus);
+};
 
-  db.get().then(function (data) {
-    loadWatchers(data.twitch);
-    updateLoop();
-    logger.info("Twitch plugin started with spec.length=" + data.twitch.length);
-  });
+const updateLoop = async () => {
+  try {
+    await update();
+  } finally {
+    timeout = setTimeout(updateLoop, 30 * 1000);
+  }
+};
+
+const startup = async (c) => {
+  client = c;
+  const { settings, twitch } = await db.get();
+  client_id = settings.twitch.client_id;
+  secret = settings.twitch.client_secret;
+  loadWatchers(twitch);
+  updateLoop();
+  logger.info(`Twitch plugin started with spec.length=${twitch.length}`);
+};
+
+const cleanup = () => {
+  clearTimeout(timeout);
+  clearTimeout(tokenTimeout);
+};
+
+module.exports = {
+  commands: [command],
+  startup,
+  cleanup
 };

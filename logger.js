@@ -1,28 +1,21 @@
 const util = require('util');
-const winston = require('winston');
+const { SPLAT } = require('triple-beam');
+const { createLogger, format, transports } = require('winston');
+const { combine, timestamp, printf } = format;
 
-function formatMeta(meta) {
-  return meta && Object.keys(meta).length
-    ? util.inspect(meta, { depth: 1, colors: true })
-    : null;
-}
+const formatMeta = (meta) => {
+  return meta[SPLAT] ? util.inspect(meta, { depth: 1, colors: true }) : '';
+};
 
-const consoleTransport = new winston.transports.Console({
-  timestamp: function() {
-    return new Date().toISOString();
-  },
-  formatter: function(options) {
-    var message = options.message !== undefined ? options.message : '';
-    var meta = formatMeta(options.meta);
-    return (
-      options.timestamp() +
-      ' ' +
-      options.level.toUpperCase() +
-      ' ' +
-      message +
-      (meta ? '\n' + meta : '')
-    );
-  }
+const myFormat = printf(({ level, message, label, timestamp, ...meta }) => {
+  return `${timestamp} ${level}: ${message} ${formatMeta(meta)}`;
 });
 
-module.exports = new winston.Logger({ transports: [consoleTransport] });
+const logger = createLogger({
+  format: combine(timestamp(), myFormat),
+  transports: [new transports.Console()]
+});
+
+module.exports = {
+  logger
+};

@@ -1,2 +1,2 @@
 const Database = require('jdb');
-module.exports = new Database();
+module.exports = { db: new Database() };
