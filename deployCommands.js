@@ -29,7 +29,7 @@ for (const p of plugins) {
     const rest = new REST().setToken(settings.discord.token);
     const data = await rest.put(
       allServers
-        ? Routes.applicationCommands(clientId)
+        ? Routes.applicationCommands(settings.discord.client_id)
         : Routes.applicationGuildCommands(
             settings.discord.client_id,
             settings.devServer

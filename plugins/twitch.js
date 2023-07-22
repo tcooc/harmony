@@ -44,13 +44,14 @@ eventBus.on('statusChanged', (name, stream, streaming) => {
       const thumbnail = stream.thumbnail_url
         .replace('{width}', 128 * 10)
         .replace('{height}', 72 * 10);
+      const cacheBuster = `v=${encodeURIComponent(stream.started_at)}`;
       channel.send({
         content: `${stream.user_name} is now streaming ${stream.game_name} at ${url}`,
         embeds: [
           {
             title: stream.title,
             url,
-            image: { url: thumbnail }
+            image: { url: `${thumbnail}?${cacheBuster}` }
           }
         ]
       });
