@@ -1,13 +1,15 @@
 const { Client, Collection, Events, GatewayIntentBits } = require('discord.js');
+const express = require('express');
 const { logger } = require('./logger');
 const { db } = require('./db');
 
-const startup = async (plugins) => {
+const startupBot = async (plugins) => {
   const client = new Client({
     intents: [GatewayIntentBits.Guilds]
   });
   const commands = new Collection();
   const cleanups = [];
+  const bindServers = [];
 
   client.on(Events.InteractionCreate, async (interaction) => {
     logger.silly(
@@ -67,6 +69,9 @@ const startup = async (plugins) => {
         commands.set(command.data.name, command);
       });
     }
+    if (plugin.bindServer) {
+      bindServers.push(plugin.bindServer);
+    }
   }
 
   const shutdown = () => {
@@ -91,7 +96,29 @@ const startup = async (plugins) => {
   process.on('SIGTERM', shutdown);
 
   client.login(settings.discord.token);
-  return client;
+  return { bindServers, cleanups };
+};
+
+const startupServer = async ({ bindServers, cleanups }) => {
+  const app = express();
+  const port = 3000;
+
+  app.use(express.json());
+
+  bindServers.forEach((bindServer) => bindServer(app));
+
+  const { close } = app.listen(port, () => {
+    logger.info(`Listening on port ${port}`);
+  });
+
+  cleanups.push(close);
+
+  return app;
+};
+
+const startup = async (plugins) => {
+  const options = await startupBot(plugins);
+  await startupServer(options);
 };
 
 module.exports = { startup };

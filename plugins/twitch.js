@@ -1,7 +1,7 @@
 var _ = require('underscore');
 var { EventEmitter } = require('events');
 const { hasAuthority } = require('../lib/Messaging');
-const { updateLoadout } = require('../lib/warframe-loadout');
+const { bindServer } = require('../lib/warframe-loadout');
 var { logger } = require('../logger');
 var { db } = require('../db');
 const { SlashCommandBuilder } = require('discord.js');
@@ -22,7 +22,7 @@ const channelsStatus = {};
 
 let timeout;
 let tokenTimeout;
-let updateLoadoutPromise = Promise.resolve();
+// let updateLoadoutPromise = Promise.resolve();
 
 const eventBus = new EventEmitter();
 
@@ -30,12 +30,12 @@ eventBus.on('update', (name, stream) => {
   logger.silly('update', name, stream);
   const streaming = stream && stream.type === 'live';
   // TODO don't update while offline
-  if (loadoutWatchers[name]) {
-    // chain promises so we don't overload the browser
-    updateLoadoutPromise = updateLoadoutPromise.finally(() =>
-      updateLoadout(loadoutWatchers[name])
-    );
-  }
+  // if (loadoutWatchers[name]) {
+  //   // chain promises so we don't overload the browser
+  //   updateLoadoutPromise = updateLoadoutPromise.finally(() =>
+  //     updateLoadout(loadoutWatchers[name])
+  //   );
+  // }
   if (streaming) {
     if (channelsStatus[name] && channelsStatus[name] !== stream.started_at) {
       eventBus.emit('statusChanged', name, stream, streaming);
@@ -238,5 +238,6 @@ const cleanup = () => {
 module.exports = {
   commands: [command],
   startup,
-  cleanup
+  cleanup,
+  bindServer: bindServer(channelsStatus)
 };
