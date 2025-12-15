@@ -1,6 +1,7 @@
 var _ = require('underscore');
 var { EventEmitter } = require('events');
 const { hasAuthority } = require('../lib/Messaging');
+const { updateLoadout } = require('../lib/warframe-loadout');
 var { logger } = require('../logger');
 var { db } = require('../db');
 const { SlashCommandBuilder } = require('discord.js');
@@ -11,6 +12,8 @@ let secret;
 let token;
 // map of stream->broadcast specs
 let channelWatchers = {};
+// warframe-loadout stream->igns
+let loadoutWatchers = {};
 // channel status values: false, true, timestamp
 // if false, means that status hasn't been initiated
 // if true, means that status has been initiated, and stream was offline
@@ -19,11 +22,20 @@ const channelsStatus = {};
 
 let timeout;
 let tokenTimeout;
+let updateLoadoutPromise = Promise.resolve();
 
 const eventBus = new EventEmitter();
 
 eventBus.on('update', (name, stream) => {
+  logger.silly('update', name, stream);
   const streaming = stream && stream.type === 'live';
+  // TODO don't update while offline
+  if (loadoutWatchers[name]) {
+    // chain promises so we don't overload the browser
+    updateLoadoutPromise = updateLoadoutPromise.finally(() =>
+      updateLoadout(loadoutWatchers[name])
+    );
+  }
   if (streaming) {
     if (channelsStatus[name] && channelsStatus[name] !== stream.started_at) {
       eventBus.emit('statusChanged', name, stream, streaming);
@@ -62,12 +74,17 @@ eventBus.on('statusChanged', (name, stream, streaming) => {
 // each spec has stream and broadcast
 function loadWatchers(specs) {
   channelWatchers = {};
+  loadoutWatchers = {};
   _.each(specs, function (spec) {
     if (!channelWatchers[spec.stream]) {
       channelWatchers[spec.stream] = [];
     }
     channelWatchers[spec.stream].push(spec.broadcast);
     channelsStatus[spec.stream] = channelsStatus[spec.stream] || false;
+
+    if (spec.ign) {
+      loadoutWatchers[spec.stream] = spec.ign;
+    }
   });
 }
 
@@ -139,6 +156,13 @@ const command = {
     .setDescription('Create or clear twitch notifications in this channel')
     .addStringOption((option) =>
       option.setName('channel').setDescription('Twitch channel id')
+    )
+    .addStringOption((option) =>
+      option
+        .setName('in-game-name')
+        .setDescription(
+          'Warframe player name to sync builds (experimental, PC only)'
+        )
     ),
   execute: async (interaction) => {
     if (!hasAuthority(interaction)) {
@@ -146,6 +170,7 @@ const command = {
       return;
     }
     const channel = interaction.options.getString('channel');
+    const ign = interaction.options.getString('in-game-name');
     db.update((data) => {
       let index = data.twitch.findIndex(
         (spec) => spec.broadcast === interaction.channelId
@@ -156,12 +181,13 @@ const command = {
       if (channel) {
         data.twitch[index] = {
           stream: channel.toLowerCase(),
-          broadcast: interaction.channelId
+          broadcast: interaction.channelId,
+          ign
         };
-        interaction.reply(`Channel following Twitch stream \`${channel}\``);
+        interaction.reply(`Current channel following Twitch \`${channel}\``);
       } else {
         data.twitch.splice(index, 1);
-        interaction.reply('Channel follow removed');
+        interaction.reply(`Current channel unfollowing Twitch \`${channel}\``);
       }
       loadWatchers(data.twitch);
     });
