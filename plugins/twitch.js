@@ -42,7 +42,7 @@ eventBus.on('update', (name, stream) => {
     }
     channelsStatus[name] = stream.started_at;
   } else {
-    channelsStatus[name] = channelsStatus[name] || true;
+    channelsStatus[name] = true;
   }
 });
 
@@ -187,7 +187,7 @@ const command = {
         interaction.reply(`Current channel following Twitch \`${channel}\``);
       } else {
         data.twitch.splice(index, 1);
-        interaction.reply(`Current channel unfollowing Twitch \`${channel}\``);
+        interaction.reply('Current channel unfollowing');
       }
       loadWatchers(data.twitch);
     });
